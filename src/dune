@@ -1,0 +1,16 @@
+(executable
+ (public_name moonsmith)
+ (libraries core_kernel clap)
+ ; Enable for debugging:
+ ; (modes byte)
+ ; (preprocess
+ ;  (pps ppx_variants_conv ppx_jane)))
+)
+
+(env
+ (dev
+  (flags
+   ; Make warnings non-fatal
+   (:standard -warn-error -A)))
+ (release
+  (ocamlopt_flags :standard -ccopt -static)))
