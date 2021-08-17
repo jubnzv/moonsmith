@@ -63,19 +63,6 @@ let gen_simple_expr () =
   | 3 -> NumberExpr(Random.float 100.00)
   | _ -> StringExpr(StringGen.gen_string ())
 
-(** Generates a random expression using definitions from the [env].
-    If [forbid_ident] is false, it won't generate new identifiers. *)
-let gen_expr ?(forbid_ident = false) env ctx =
-  let m = if forbid_ident then 4 else 5 in
-  match Random.int_incl 0 m with
-  | 0 | 1 | 2 | 3 | 4 -> gen_simple_expr ()
-  | _ -> mk_ident env ctx
-(* TODO: | 6 -> AttrGetExpr { ag_obj: expr; ag_key: expr } *)
-(* TODO: | TableExpr of { table_fields: table_field list } *)
-(* TODO: | FuncCallExpr of func_call *)
-(* TODO: | UnExpr of { un_op: operator; un_expr: expr } *)
-(* TODO: | BinExpr of { bin_lhs: expr; bin_op: operator; bin_rhs: expr } *)
-
 (** Generates expression with the given type.*)
 let gen_simple_typed_expr ty =
   match ty with
@@ -165,7 +152,7 @@ let gen_typed_bin_expr ty =
     Returns None if environment and parents are empty. *)
 let take_random_binding env =
   let rec aux ?(use_this_level = false) env level visited =
-    (** Use this environment and visited ones. *)
+    (* Use this environment and visited ones. *)
     let stop_here () =
       if (env_empty env) then
         if List.is_empty visited then
@@ -174,7 +161,7 @@ let take_random_binding env =
           aux ~use_this_level:true !(List.hd_exn visited) 0 []
       else (* This env is not empty. Use it. *)
         aux ~use_this_level:true env level visited
-    (** Walk to the parent environment. We want to reach the depth [level]. *)
+    (* Walk to the parent environment. We want to reach the depth [level]. *)
     and walk_previous () =
       visited @ [ref env]
       |> aux (env_get_parent_exn env) (level - 1)
@@ -210,7 +197,7 @@ let take_random_binding env =
 (** Generates conditional expression used in the loops and conditional
     statements. *)
 let gen_cond_expr env =
-  (** Generates rhs with type that is appropriate to lhs is possible. *)
+  (* Generates rhs with type that is appropriate to lhs is possible. *)
   let gen_rhs lhs =
     match lhs with
     | NumberExpr _ -> gen_simple_typed_expr TyNumber
@@ -251,9 +238,9 @@ let gen_cond_expr env =
 
 (** Generates a random init for the table expression.
     It could be both: array or hashmap table init. *)
-let gen_random_table_init expr env =
+let gen_random_table_init () =
   let gen_array args_num =
-    let rec gen acc =
+    let gen acc =
       if args_num <= List.length acc then
         [gen_simple_expr ()] |> List.append acc
       else
@@ -276,7 +263,7 @@ let gen_random_table_init expr env =
 (* TODO: | _ -> gen_hashmap args_num *)
 
 (** Generates an initializer statement for the identifier [expr] with known type. *)
-let gen_init_stmt_for_ident ?(assign_local = false) expr env =
+let gen_init_stmt_for_ident ?(assign_local = false) expr =
   let gen_stmt rhs =
     AssignStmt{ assign_local;
                 assign_lhs = [expr];
@@ -306,14 +293,14 @@ let gen_init_stmt_for_ident ?(assign_local = false) expr env =
         end
       (* TODO: | TyUserdata  -> "userdata" *)
       (* TODO: | TyThread    -> "thread"   *)
-      | TyTable -> gen_random_table_init expr env |> gen_stmt
+      | TyTable -> gen_random_table_init () |> gen_stmt
       | _ -> assert false
     end
   | _ -> assert false
 
 (** Generates free function call statement with definition of its parameters,
     using information about types of the arguments. *)
-let gen_fcall_from_fdef stmt env =
+let gen_fcall_from_fdef stmt =
   match stmt with
   | FuncDefStmt fd -> begin
       let (fcf_args, fcf_init_stmts) =
@@ -326,7 +313,7 @@ let gen_fcall_from_fdef stmt env =
                     let new_name = "fc" ^ id.id_name in
                     let new_ident = IdentExpr{ id_name = new_name;
                                                id_ty = id.id_ty } in
-                    let init = gen_init_stmt_for_ident new_ident env in
+                    let init = gen_init_stmt_for_ident new_ident in
                     acc @ [(new_ident, init)]
                   end
                 | _ -> assert false
@@ -385,10 +372,10 @@ let gen_do_end_stmt env gen_block =
     one that exists in the current environment [env]. *)
 let gen_assign_stmt env ctx =
   (* Generates a random expression that is type compatible with lhs of the
-      assignment operation. *)
+     assignment operation. *)
   let gen_rhs_expr_from_lhs ty lhs =
     match lhs with
-    | IdentExpr id -> begin
+    | IdentExpr _ -> begin
         match Random.int_incl 0 3 with
         | 0 -> gen_typed_un_expr ty
         | _ -> gen_typed_bin_expr ty
@@ -413,7 +400,7 @@ let gen_assign_stmt env ctx =
       ~f:(fun acc lhs -> begin
             let ty = match get_essential_ty lhs with
               | Some(ty) -> ty
-              | None -> assert false (** always IdentExpr *)
+              | None -> assert false (* always IdentExpr *)
             in
             (* Choose a random rhs. *)
             match Random.int_incl 0 5 with
@@ -525,7 +512,7 @@ let ctx_to_string ctx c =
         ~init:[]
         ~f:(fun acc stmt -> begin
               match stmt with
-              | FuncDefStmt _ -> acc @ gen_fcall_from_fdef stmt ctx.ctx_global_env
+              | FuncDefStmt _ -> acc @ gen_fcall_from_fdef stmt
               | _ -> acc
             end)
       |> List.map ~f:(fun s -> stmt_to_s c s)
