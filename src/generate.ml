@@ -418,12 +418,15 @@ let gen_assign_stmt env ctx =
               assign_rhs }
 
 (** Generates random statement in the given [env]. *)
-let gen_stmt env ctx gen_block =
-  match Random.int_incl 0 6 with
-  | 0             -> gen_if_stmt env gen_block
-  | 1             -> gen_loop_stmt env gen_block
-  | 2 | 3 | 4 | 5 -> gen_assign_stmt env ctx
-  | _             -> gen_do_end_stmt env gen_block
+let gen_stmt ?(no_nested = false) env ctx gen_block =
+  if no_nested then
+    gen_assign_stmt env ctx
+  else
+    match Random.int_incl 0 6 with
+    | 0             -> gen_if_stmt env gen_block
+    | 1             -> gen_loop_stmt env gen_block
+    | 2 | 3 | 4 | 5 -> gen_assign_stmt env ctx
+    | _             -> gen_do_end_stmt env gen_block
 
 (** Generates BlockStmt with randomly generated nested blocks. *)
 let rec gen_block depth ctx env_parent max_stmts =
@@ -431,15 +434,13 @@ let rec gen_block depth ctx env_parent max_stmts =
     if List.length acc >= max_num then
       acc
     else
-      let gen_block' = (gen_block (depth + 1) ctx) in
-      gen_nested_stmts (acc @ [gen_stmt env ctx gen_block']) env max_num
+      let gen_block' = (gen_block (depth + 1) ctx)
+      and nn = if phys_equal max_stmts 1 then true else false in
+      let acc = acc @ [gen_stmt ~no_nested:nn env ctx gen_block'] in
+      gen_nested_stmts acc env max_num
   in
   (* Prevent endless recursion. *)
-  let stmts_num =
-    if depth < 5 then
-      Random.int_incl 1 max_stmts
-    else
-      0
+  let stmts_num = if depth < 5 then Random.int_incl 1 max_stmts else 1
   and block_env = env_mk () in
   let block_env = { block_env  with env_parent = Some(ref env_parent) } in
   let block_stmts = gen_nested_stmts [] block_env stmts_num in

@@ -365,7 +365,7 @@ let rec stmt_to_s ?(cr = false) ?(depth = 0) c stmt =
       and else_s = match s.if_else with
         | Some es -> begin
             let es_s = stmt_to_s c es ~depth:(depth + 1) in
-            Printf.sprintf "\n%selse\n%s\n" (mk_i ()) es_s
+            Printf.sprintf "\n%selse\n%s" (mk_i ()) es_s
           end
         | None -> ""
       in
