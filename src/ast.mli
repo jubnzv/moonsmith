@@ -88,6 +88,7 @@ and stmt =
   | ReturnStmt of { return_exprs: expr list }
   | BreakStmt
   | BlockStmt of { block_stmts: stmt list;
+                   block_is_loop: bool;
                    block_env: env }
 and loop_type =
   | While

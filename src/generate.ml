@@ -345,11 +345,11 @@ let get_or_create_ident env ctx =
 (** Generates random conditional statement. *)
 let gen_if_stmt env gen_block =
   let if_else = match Random.int_incl 0 1 with
-    | 0 -> Some(gen_block env (Random.int_incl 1 5))
+    | 0 -> Some(gen_block false env (Random.int_incl 1 5))
     | _ -> None
   in
   IfStmt{ if_cond = gen_cond_expr env;
-          if_body = gen_block env (Random.int_incl 1 5) ;
+          if_body = gen_block false env (Random.int_incl 1 5) ;
           if_else }
 
 (** Generates random loop statement.
@@ -360,12 +360,30 @@ let gen_loop_stmt env gen_block =
     | _ -> Repeat
   in
   LoopStmt{ loop_cond = gen_cond_expr env;
-            loop_block = gen_block env (Random.int_incl 1 5) ;
+            loop_block = gen_block true env (Random.int_incl 1 5) ;
             loop_ty }
+
+(** Generates a break statement wrapped inside conditional statement, i.e.:
+    if a == 2 then
+      break
+    end
+    We always need conditional statements, because Lua forbids standalone break
+    statements.
+  *)
+let gen_cond_break_stmt env =
+  let block_env = env_mk () in
+  let block_env = { block_env with env_parent = Some(ref env) } in
+  let if_cond = gen_cond_expr env
+  and if_body = BlockStmt { block_stmts = [BreakStmt];
+                            block_is_loop = false;
+                            block_env }
+  in
+  env_add_child env block_env;
+  IfStmt { if_cond; if_body; if_else = None }
 
 (** Generates do-end block with a random nested statements. *)
 let gen_do_end_stmt env gen_block =
-  DoBlockStmt{ do_block = gen_block env (Random.int_incl 1 5) ; }
+  DoBlockStmt{ do_block = gen_block false env (Random.int_incl 1 5) ; }
 
 (** Generates a random assignment statement.
     It could be both binding a new variable or changing the value/type of
@@ -418,34 +436,59 @@ let gen_assign_stmt env ctx =
               assign_rhs }
 
 (** Generates random statement in the given [env]. *)
-let gen_stmt ?(no_nested = false) env ctx gen_block =
+let gen_stmt
+    ?(no_nested = false)
+    ?(gen_loop = None)
+    ?(in_loop = false)
+    env ctx gen_block =
   if no_nested then
     gen_assign_stmt env ctx
+  else if in_loop && phys_equal (Random.int_incl 0 8) 0 then
+    gen_cond_break_stmt env
   else
-    match Random.int_incl 0 6 with
-    | 0             -> gen_if_stmt env gen_block
-    | 1             -> gen_loop_stmt env gen_block
-    | 2 | 3 | 4 | 5 -> gen_assign_stmt env ctx
-    | _             -> gen_do_end_stmt env gen_block
+    match gen_loop with
+    | Some true -> begin
+        gen_loop_stmt env gen_block
+      end
+    | Some false -> begin
+        match Random.int_incl 0 4 with
+        | 0  -> gen_if_stmt env gen_block
+        | _  -> gen_assign_stmt env ctx
+      end
+    | None -> begin
+        match Random.int_incl 0 7 with
+        | 0             -> gen_if_stmt env gen_block
+        | 1 | 2 | 3 | 4 -> gen_assign_stmt env ctx
+        | 5 | 6         -> gen_loop_stmt env gen_block
+        | _             -> gen_do_end_stmt env gen_block
+      end
 
 (** Generates BlockStmt with randomly generated nested blocks. *)
-let rec gen_block depth ctx env_parent max_stmts =
-  let rec gen_nested_stmts acc env max_num =
+let rec gen_block depth ctx in_loop  env_parent max_stmts =
+  let rec gen_nested_stmts acc env max_num is_loop =
     if List.length acc >= max_num then
       acc
     else
       let gen_block' = (gen_block (depth + 1) ctx)
       and nn = if phys_equal max_stmts 1 then true else false in
-      let acc = acc @ [gen_stmt ~no_nested:nn env ctx gen_block'] in
-      gen_nested_stmts acc env max_num
+      let acc = acc @ [gen_stmt
+                         ~in_loop:in_loop
+                         ~no_nested:nn
+                         ~gen_loop:(Some(is_loop))
+                         env ctx gen_block'] in
+      gen_nested_stmts acc env max_num is_loop
   in
   (* Prevent endless recursion. *)
   let stmts_num = if depth < 5 then Random.int_incl 1 max_stmts else 1
   and block_env = env_mk () in
-  let block_env = { block_env  with env_parent = Some(ref env_parent) } in
-  let block_stmts = gen_nested_stmts [] block_env stmts_num in
+  let block_env = { block_env  with env_parent = Some(ref env_parent) }
+  and block_is_loop = in_loop || match Random.int_incl 0 7 with
+    | 0 -> true
+    | _ -> false
+  in
+  let block_stmts = gen_nested_stmts [] block_env stmts_num block_is_loop in
   env_add_child env_parent block_env;
-  BlockStmt{ block_stmts; block_env }
+  BlockStmt{ block_stmts; block_is_loop; block_env }
 
 (** Generates a random function defined on the top-level. *)
 let gen_toplevel_funcdef ctx =
@@ -465,7 +508,7 @@ let gen_toplevel_funcdef ctx =
     aux [] num_args
   in
   let fd_name = Printf.sprintf "func%d" @@ get_free_idx ctx
-  and fd_body = gen_block 0 ctx ctx.ctx_global_env 10 in
+  and fd_body = gen_block 0 ctx false ctx.ctx_global_env 10 in
   let fd_args = gen_args 5 (get_block_env_exn fd_body) in
   FuncDefStmt{ fd_name; fd_args; fd_body }
 

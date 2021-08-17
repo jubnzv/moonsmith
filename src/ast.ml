@@ -92,6 +92,7 @@ and stmt =
   | ReturnStmt of { return_exprs: expr list }
   | BreakStmt
   | BlockStmt of { block_stmts: stmt list;
+                   block_is_loop: bool;
                    block_env: env }
 and loop_type =
   | While
@@ -395,4 +396,5 @@ let rec stmt_to_s ?(cr = false) ?(depth = 0) c stmt =
       let body_s = stmt_to_s c s.do_block ~depth:(depth + 1) in
       Printf.sprintf "%sdo\n%s\n%send" (mk_i ()) body_s (mk_i ())
     end
+  | BreakStmt -> Printf.sprintf "%sbreak" (mk_i ())
   | _ -> assert false
