@@ -285,10 +285,8 @@ let gen_init_stmt_for_ident ?(assign_local = false) expr =
                       lambda_body }
           |> gen_stmt
         end
-      (* TODO: | TyUserdata  -> "userdata" *)
-      (* TODO: | TyThread    -> "thread"   *)
       | TyTable -> gen_random_table_init () |> gen_stmt
-      | _ -> assert false
+      | TyUserdata | TyThread -> assert false
     end
   | _ -> assert false
 
