@@ -24,14 +24,12 @@ let gen_layout c =
 
 (** Randomly generates an essential type. *)
 let gen_ty () =
-  match Random.int_incl 0 7 with
+  match Random.int_incl 0 5 with
   | 0 -> TyNil
   | 1 -> TyBoolean
   | 2 -> TyNumber
   | 3 -> TyString
-  (* TODO: | 4 -> TyUserdata *)
-  | 5 -> TyFunction
-  (* TODO: | 6 -> TyThread *)
+  | 4 -> TyFunction
   | _ -> TyTable
 
 (** Creates a new identifier in the [env].
@@ -63,6 +61,32 @@ let gen_simple_expr () =
   | 3 -> NumberExpr(Random.float 100.00)
   | _ -> StringExpr(StringGen.gen_string ())
 
+(** Generates a random init for the table expression.
+    It could be both: array or hashmap table init. *)
+let gen_random_table_init () =
+  let gen_array args_num =
+    let gen acc =
+      if args_num <= List.length acc then
+        [gen_simple_expr ()] |> List.append acc
+      else
+        acc
+    in
+    let table_elements = gen [] in
+    TableExpr(TArray{table_elements})
+    (* and gen_hashmap args_num =              *)
+    (*   let rec gen acc =                     *)
+    (*     if args_num <= List.length acc then *)
+    (*     else                                *)
+    (*       acc                               *)
+    (*     in                                  *)
+    (*     acc @ []                            *)
+    (*       gen []                            *)
+  in
+  let args_num = Random.int_incl 0 5 in
+  match Random.int_incl 0 1 with
+  | _ -> gen_array args_num
+(* TODO: | _ -> gen_hashmap args_num *)
+
 (** Generates expression with the given type.*)
 let gen_simple_typed_expr ty =
   match ty with
@@ -74,12 +98,8 @@ let gen_simple_typed_expr ty =
     end
   | TyNumber -> NumberExpr(Random.float 100.0)
   | TyString -> StringExpr(StringGen.gen_string ())
-  (* TODO: | TyUserdata  -> "userdata" *)
-  (* TODO: | TyFunction  -> "function" *)
-  (* TODO: | TyThread    -> "thread"   *)
-  (* TODO: Provide some initialization for the fields: *)
-  (* TODO: | TyTable -> TableExpr{table_fields = []} *)
-  | _ -> NilExpr
+  | TyTable -> gen_random_table_init ()
+  | TyThread | TyUserdata | TyFunction -> NilExpr
 
 (** Generates unary expression that return result with the given type.
     If it is not possible to apply one of unary operators to this type,
@@ -236,32 +256,6 @@ let gen_cond_expr env =
             bin_op = gen_logical_op bin_lhs bin_rhs;
             bin_rhs }
 
-(** Generates a random init for the table expression.
-    It could be both: array or hashmap table init. *)
-let gen_random_table_init () =
-  let gen_array args_num =
-    let gen acc =
-      if args_num <= List.length acc then
-        [gen_simple_expr ()] |> List.append acc
-      else
-        acc
-    in
-    let table_elements = gen [] in
-    TableExpr(TArray{table_elements})
-    (* and gen_hashmap args_num =              *)
-    (*   let rec gen acc =                     *)
-    (*     if args_num <= List.length acc then *)
-    (*     else                                *)
-    (*       acc                               *)
-    (*     in                                  *)
-    (*     acc @ []                            *)
-    (*       gen []                            *)
-  in
-  let args_num = Random.int_incl 0 5 in
-  match Random.int_incl 0 1 with
-  | _ -> gen_array args_num
-(* TODO: | _ -> gen_hashmap args_num *)
-
 (** Generates an initializer statement for the identifier [expr] with known type. *)
 let gen_init_stmt_for_ident ?(assign_local = false) expr =
   let gen_stmt rhs =
@@ -369,7 +363,7 @@ let gen_loop_stmt env gen_block =
     end
     We always need conditional statements, because Lua forbids standalone break
     statements.
-  *)
+*)
 let gen_cond_break_stmt env =
   let block_env = env_mk () in
   let block_env = { block_env with env_parent = Some(ref env) } in
@@ -490,6 +484,15 @@ let rec gen_block depth ctx in_loop  env_parent max_stmts =
   env_add_child env_parent block_env;
   BlockStmt{ block_stmts; block_is_loop; block_env }
 
+(** Extends the BlockStmt [block] adding given [stmt] to the end of the block. *)
+let extend_block_stmt block stmt =
+  match block with
+  | BlockStmt block -> begin
+      let block_stmts = block.block_stmts @ [stmt] in
+      BlockStmt { block with block_stmts }
+    end
+  | _ -> block
+
 (** Generates a random function defined on the top-level. *)
 let gen_toplevel_funcdef ctx =
   let gen_arg n env =
@@ -507,10 +510,40 @@ let gen_toplevel_funcdef ctx =
     let num_args = Random.int_incl 0 max_args in
     aux [] num_args
   in
+  let gen_return_types () =
+    let rec aux acc num =
+      if List.length acc >= num then acc
+      else aux (acc @ [gen_ty ()]) (num - 1)
+    in
+    aux [] (Random.int_incl 0 5)
+  in
+  let gen_return_exprs return_types =
+    let get_ty = function
+      | TyNil     -> gen_simple_typed_expr TyBoolean
+      | TyBoolean -> gen_simple_typed_expr TyBoolean
+      | TyNumber  -> gen_simple_typed_expr TyNumber
+      | TyString  -> gen_simple_typed_expr TyString
+      | TyTable   -> gen_simple_typed_expr TyTable
+      | TyThread | TyUserdata | TyFunction -> NilExpr
+    in
+    (* Function that returns doesn't have expr types is a routine. We don't
+       need return statement at all then. *)
+    if phys_equal 0 @@ List.length return_types then
+      None
+    else
+      Some(List.fold_left return_types ~init:[] ~f:(fun acc e -> acc @ [get_ty e]))
+  in
   let fd_name = Printf.sprintf "func%d" @@ get_free_idx ctx
   and fd_body = gen_block 0 ctx false ctx.ctx_global_env 10 in
-  let fd_args = gen_args 5 (get_block_env_exn fd_body) in
-  FuncDefStmt{ fd_name; fd_args; fd_body }
+  let fd_args = gen_args 5 (get_block_env_exn fd_body)
+  and fd_ty  = gen_return_types () in
+  let fd_body = match gen_return_exprs fd_ty with
+    | None -> fd_body
+    | Some return_exprs -> begin
+        ReturnStmt{ return_exprs } |> extend_block_stmt fd_body
+      end
+  in
+  FuncDefStmt{ fd_name; fd_args; fd_body; fd_ty }
 
 (** Generates a random table created using the assignment expression. *)
 let gen_table ctx =

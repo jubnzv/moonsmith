@@ -88,7 +88,8 @@ and stmt =
                  for_body: stmt }
   | FuncDefStmt of { fd_name: string;
                      fd_args: expr list;
-                     fd_body: stmt }
+                     fd_body: stmt;
+                     fd_ty: ty list }
   | ReturnStmt of { return_exprs: expr list }
   | BreakStmt
   | BlockStmt of { block_stmts: stmt list;
@@ -308,7 +309,15 @@ let rec stmt_to_s ?(cr = false) ?(depth = 0) c stmt =
   let cr_s = if cr then "\n" else "" in
   match stmt with
   | FuncDefStmt fd -> begin
-      let docstring = List.fold_left
+      let docstring =
+        [ List.fold_left
+            fd.fd_ty
+            ~init:[]
+            ~f:(fun acc ty -> acc @ [ty_to_s ty])
+          |> String.concat ~sep:", "
+          |> Printf.sprintf "%s-- @return %s" (mk_i ())]
+        |> List.append @@
+        List.fold_left
           fd.fd_args
           ~init:[]
           ~f:(fun acc expr -> begin
@@ -318,7 +327,7 @@ let rec stmt_to_s ?(cr = false) ?(depth = 0) c stmt =
                            (mk_i ()) id.id_name (ty_to_s id.id_ty)]
                 | _ -> assert false
               end)
-                      |> String.concat ~sep:"\n"
+        |> String.concat ~sep:"\n"
       and args_code = exprs_to_cs stmt_to_s c fd.fd_args
       and body_code = List.fold_left
           (to_block_stmts_exn fd.fd_body)
@@ -397,4 +406,8 @@ let rec stmt_to_s ?(cr = false) ?(depth = 0) c stmt =
       Printf.sprintf "%sdo\n%s\n%send" (mk_i ()) body_s (mk_i ())
     end
   | BreakStmt -> Printf.sprintf "%sbreak" (mk_i ())
-  | _ -> assert false
+  | ReturnStmt s -> begin
+      let exprs_s = exprs_to_cs stmt_to_s c s.return_exprs in
+      Printf.sprintf "%sreturn %s" (mk_i ()) exprs_s
+    end
+  | NumForStmt _ | ForStmt _ -> assert false

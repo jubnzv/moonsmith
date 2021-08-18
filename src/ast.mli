@@ -84,7 +84,8 @@ and stmt =
                  for_body: stmt }
   | FuncDefStmt of { fd_name: string;
                      fd_args: expr list;
-                     fd_body: stmt }
+                     fd_body: stmt;
+                     fd_ty: ty list }
   | ReturnStmt of { return_exprs: expr list }
   | BreakStmt
   | BlockStmt of { block_stmts: stmt list;
