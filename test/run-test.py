@@ -44,13 +44,13 @@ def run():
             print(f"{i}: moonsmith's exception: {e}")
             continue
         try:
-            out = subprocess.check_output(["lua", "test.lua"],
+            out = subprocess.check_output(["lua", "out.lua"],
                                           stderr=subprocess.STDOUT,
                                           timeout=g_timeout_s)
         except subprocess.CalledProcessError as e:
             out = e.output.decode("utf-8")
             print(f"{i}: Exception while executing Lua: {out}")
-            subprocess.run(["cp", "test.lua", f"test/out/{i}.lua"])
+            subprocess.run(["cp", "out.lua", f"test/out/{i}.lua"])
         except subprocess.TimeoutExpired:
             continue
 
