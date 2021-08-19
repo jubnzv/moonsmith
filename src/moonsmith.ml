@@ -25,15 +25,23 @@ let () =
         "Seed used to initialize random generator. If not set, seed will be choosen randomly."
       ~placeholder: "SEED"
       ""
+  and stdout =
+    Clap.default_int
+      ~short: 'S'
+      ~description:
+        "Print generated program to stdout"
+      ~placeholder: "STDOUT"
+      0
   in
 
   Clap.close ();
 
   let c = Config.mk_default () in
   let c = set_seed c seed in
+  let c = { c with c_stdout = phys_equal stdout 1 } in
   let program = Generate.generate c in
   let oc = Out_channel.create out in
   Out_channel.output_string oc program;
   Out_channel.flush oc;
   Out_channel.close oc;
-  if c.Config.c_debug then Printf.printf "%s\n" program else ();
+  if c.Config.c_stdout then Printf.printf "%s\n" program else ();

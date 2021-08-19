@@ -2,9 +2,11 @@
 
 type t =
   { c_indent: string;
-    c_debug: bool;
     c_min_toplevel_stmts: int;
     c_max_toplevel_stmts: int;
+
+    (** Prints generated program to stdout. *)
+    c_stdout: bool;
 
     (** Seed used to initialize random generator. If None, seed will be choosen randomly. *)
     c_seed: int option;
