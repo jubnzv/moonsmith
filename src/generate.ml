@@ -83,7 +83,7 @@ let gen_random_table_init () =
     (*       gen []                            *)
   in
   let args_num = Random.int_incl 0 5 in
-  match Random.int_incl 0 1 with
+  match Random.bool () with
   | _ -> gen_array args_num
 (* TODO: | _ -> gen_hashmap args_num *)
 
@@ -92,8 +92,8 @@ let gen_simple_typed_expr ty =
   match ty with
   | TyNil     -> NilExpr
   | TyBoolean -> begin
-      match Random.int_incl 0 1 with
-      | 0 -> TrueExpr
+      match Random.bool () with
+      | true -> TrueExpr
       | _ -> FalseExpr
     end
   | TyNumber -> NumberExpr(Random.float 100.0)
@@ -137,12 +137,12 @@ let gen_typed_bin_expr ty =
       BinExpr { bin_lhs; bin_op; bin_rhs }
     end
   | TyBoolean -> begin
-      match Random.int_incl 0 1 with
-      | 0 -> begin (* compare random booleans *)
+      match Random.bool () with
+      | true -> begin (* compare random booleans *)
           let bin_lhs = gen_simple_typed_expr TyBoolean
           and bin_rhs = gen_simple_typed_expr TyBoolean
-          and bin_op = match Random.int_incl 0 1 with
-            | 0 -> OpEq
+          and bin_op = match Random.bool () with
+            | true -> OpEq
             | _ -> OpNeq
           in
           BinExpr { bin_lhs; bin_op; bin_rhs }
@@ -268,8 +268,8 @@ let gen_init_stmt_for_ident ?(assign_local = false) expr =
       match id.id_ty with
       | TyNil     -> gen_stmt NilExpr
       | TyBoolean ->
-        let rhs = match Random.int_incl 0 1 with
-          | 0 -> TrueExpr
+        let rhs = match Random.bool () with
+          | true -> TrueExpr
           | _ -> FalseExpr
         in
         gen_stmt rhs
@@ -326,8 +326,8 @@ let gen_fcall_from_fdef stmt =
     User should flush pending bindings in the [env] after calling this
     function. *)
 let get_or_create_ident env ctx =
-  match Random.int_incl 0 1 with
-  | 0 -> mk_ident env ctx
+  match Random.bool () with
+  | true -> mk_ident env ctx
   | _ -> begin
       match (take_random_binding env) with
       | Some b -> !b
@@ -336,8 +336,8 @@ let get_or_create_ident env ctx =
 
 (** Generates random conditional statement. *)
 let gen_if_stmt env gen_block =
-  let if_else = match Random.int_incl 0 1 with
-    | 0 -> Some(gen_block false env (Random.int_incl 1 5))
+  let if_else = match Random.bool () with
+    | true -> Some(gen_block false env (Random.int_incl 1 5))
     | _ -> None
   in
   IfStmt{ if_cond = gen_cond_expr env;
@@ -347,8 +347,8 @@ let gen_if_stmt env gen_block =
 (** Generates random loop statement.
     It randomly choose between while and repeat statements. *)
 let gen_loop_stmt env gen_block =
-  let loop_ty = match Random.int_incl 0 1 with
-    | 0 -> While
+  let loop_ty = match Random.bool () with
+    | true -> While
     | _ -> Repeat
   in
   LoopStmt{ loop_cond = gen_cond_expr env;
@@ -545,7 +545,7 @@ let gen_toplevel_funcdef ctx =
 
 (** Generates a random table created using the assignment expression. *)
 let gen_table ctx =
-  let assign_local = if phys_equal (Random.int_incl 0 1) 0 then true else false
+  let assign_local = if Random.bool () then true else false
   and name = IdentExpr{ id_name = Printf.sprintf "t%d" @@ get_free_idx ctx;
                         id_ty = TyTable }
   and init = TableExpr(THashMap{table_fields = []})
@@ -557,8 +557,8 @@ let gen_table ctx =
 (** Generates top-level statements for the given [ctx]. *)
 let gen_top_stmts ctx l =
   let gen_top_stmt ctx =
-    match (Random.int_incl 0 1) with
-    | 0 -> gen_toplevel_funcdef ctx
+    match Random.bool () with
+    | true -> gen_toplevel_funcdef ctx
     | _ -> gen_table ctx
   in
   let rec aux ctx acc =
