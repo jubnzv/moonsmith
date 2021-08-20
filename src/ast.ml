@@ -259,7 +259,14 @@ let rec expr_to_s stmt_to_s c expr =
       in
       Printf.sprintf "function (%s) %s end" args_s body_s
     end
-  | NumberExpr v -> Printf.sprintf "%f" v
+  | NumberExpr v -> begin
+      match Random.int_incl 0 4 with
+      | 0 (* float *) -> Printf.sprintf "%f" v
+      | _ (* number *) -> begin
+          let n = Float.iround_towards_zero_exn v in
+          Printf.sprintf "%d" n
+        end
+    end
   | UnExpr e -> begin
       let s = match e.un_op with
         | OpSub -> ""
