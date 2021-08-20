@@ -3,9 +3,8 @@
  (libraries core_kernel clap)
  ; Enable for debugging:
  ; (modes byte)
- ; (preprocess
- ;  (pps ppx_variants_conv ppx_jane)))
-)
+ (preprocess
+  (pps ppx_jane)))
 
 (env
  (dev

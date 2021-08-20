@@ -8,11 +8,25 @@ type layout =
 
 (** Generation context. *)
 type context =
-  { ctx_stmts: stmt list;
+  {
+    (** Randomly generated AST. *)
+    ctx_stmts: stmt list;
+
+    (** Global environment for the top-level. *)
     ctx_global_env: env;
+
+    (** Definitions of standard functions. *)
+    ctx_standard_functions: stmt list;
+
+    (** Map that accociates id of the FuncDefStmt with pointer to its AST node. *)
+    mutable ctx_func_def_map: (int, stmt ref, Int.comparator_witness) Base.Map.t;
+
+    (** Next free index used to generate unique names. *)
     mutable ctx_free_idx: int;
+
     (** Seed used to initialize PRG. *)
-    ctx_seed: int; }
+    ctx_seed: int;
+  }
 
 let get_free_idx ctx =
   ctx.ctx_free_idx <- ctx.ctx_free_idx + 1;
@@ -48,7 +62,7 @@ let mk_ident ?(add_now=false) ?(name=None) env ctx =
   in
   let i = IdentExpr{ id_name = name;
                      id_ty = (gen_ty ()) } in
-  let _ =
+  let (_ : unit) =
     if add_now then begin env_add_binding env i;         end
     else            begin env_add_pending_binding env i; end
   in
@@ -292,12 +306,12 @@ let gen_init_stmt_for_ident ?(assign_local = false) expr =
     end
   | _ -> assert false
 
-(** Generates free function call statement with definition of its parameters,
-    using information about types of the arguments. *)
+(** Generates a call statement for a free function with definition of its
+    parameters, using information about types of the arguments. *)
 let gen_fcall_from_fdef stmt =
   match stmt with
   | FuncDefStmt fd -> begin
-      let (fcf_args, fcf_init_stmts) =
+      let (fc_args, fcf_init_stmts) =
         List.fold_left
           fd.fd_args
           ~init:[]
@@ -317,9 +331,12 @@ let gen_fcall_from_fdef stmt =
       let fcf_func = IdentExpr{ id_name = fd.fd_name;
                                 id_ty = TyFunction }
       in
-      let fc = FCFunc{ fcf_func; fcf_args }
+      let fc_ty = FCFunc{ fcf_func } in
+      let fc_expr = FuncCallExpr{ fc_id = fd.fd_id;
+                                  fc_ty;
+                                  fc_args }
       in
-      fcf_init_stmts @ [FuncCallStmt{fc_expr = FuncCallExpr(fc)}]
+      fcf_init_stmts @ [ FuncCallStmt{ fc_expr } ]
     end
   | _ -> assert false
 
@@ -335,6 +352,23 @@ let get_or_create_ident env ctx =
       | Some b -> !b
       | None -> mk_ident env ctx
     end
+
+(** Returns ident with given type [ty] from the current environment
+    [env]. If there no identifiers with such [ty], returns None.
+    environments. *)
+let get_typed_ident ty env =
+  let rec search env =
+    List.find
+      env.env_bindings
+      ~f:(fun expr_ref -> begin
+            match get_essential_ty !expr_ref with
+            | Some e_ty -> if equal_ty e_ty ty then true else false
+            | None -> false
+          end)
+  in
+  match search env with
+  | Some expr_ref -> Some !expr_ref
+  | None -> None
 
 (** Generates random conditional statement. *)
 let gen_if_stmt env gen_block =
@@ -356,6 +390,55 @@ let gen_loop_stmt env gen_block =
   LoopStmt{ loop_cond = gen_cond_expr env;
             loop_block = gen_block true env (Random.int_incl 1 5) ;
             loop_ty }
+
+(** Generates a random function call statement. *)
+let gen_func_call_stmt env ctx =
+  let peek_func_def () =
+    (* We always have at least some standard functions on the top-level, so it
+       will work anyway. *)
+    let n = Random.int_incl 0 ((Map.length ctx.ctx_func_def_map) - 1) in
+    match Map.nth ctx.ctx_func_def_map n with
+    | Some(_, stmt_ref) -> !stmt_ref
+    | None -> assert false
+  in
+  let gen_args fd =
+    match fd with
+    | FuncDefStmt fd -> begin
+        let len = List.length fd.fd_args in
+        let rec aux acc n =
+          if n >= len then acc
+          else begin
+            let arg = List.nth_exn fd.fd_args n in
+            let ty = match get_essential_ty arg with
+              | Some ty -> ty
+              | None -> TyNil
+            in
+            let arg = match get_typed_ident ty env with
+              | Some ident -> ident
+              | None -> gen_simple_typed_expr ty
+            in
+            aux (acc @ [arg]) (n + 1)
+          end
+        in
+        aux [] 0
+      end
+    | _ -> assert false
+  in
+  match peek_func_def () with
+  | FuncDefStmt fdd -> begin
+      let fcf_func = IdentExpr{ id_name = fdd.fd_name;
+                                id_ty = TyFunction }
+      in
+      let fc_ty = FCFunc{ fcf_func } in
+      let fd = FuncDefStmt{ fdd with fd_id = fdd.fd_id } in
+      let fc_args = gen_args fd in
+      let fc_expr = FuncCallExpr{ fc_id = fdd.fd_id;
+                                  fc_ty;
+                                  fc_args }
+      in
+      FuncCallStmt{ fc_expr }
+    end
+  | _ -> assert false
 
 (** Generates a break statement wrapped inside conditional statement, i.e.:
     if a == 2 then
@@ -442,19 +525,21 @@ let gen_stmt
   else
     match gen_loop with
     | Some true -> begin
-        gen_loop_stmt env gen_block
+        match Random.int_incl 0 6 with
+        | 0 | 1 | 2  -> gen_assign_stmt env ctx
+        | 3 | 4 | 5  -> gen_func_call_stmt env ctx
+        | _  -> gen_if_stmt env gen_block
       end
     | Some false -> begin
-        match Random.int_incl 0 4 with
-        | 0  -> gen_if_stmt env gen_block
-        | _  -> gen_assign_stmt env ctx
+        gen_loop_stmt env gen_block
       end
     | None -> begin
-        match Random.int_incl 0 7 with
-        | 0             -> gen_if_stmt env gen_block
-        | 1 | 2 | 3 | 4 -> gen_assign_stmt env ctx
-        | 5 | 6         -> gen_loop_stmt env gen_block
-        | _             -> gen_do_end_stmt env gen_block
+        match Random.int_incl 0 12 with
+        | 0                     -> gen_if_stmt env gen_block
+        | 1 | 2 | 3 | 4 | 5 | 6 -> gen_assign_stmt env ctx
+        | 7 | 8 | 9 | 10        -> gen_func_call_stmt env ctx
+        | 11                    -> gen_loop_stmt env gen_block
+        | _                     -> gen_do_end_stmt env gen_block
       end
 
 (** Generates BlockStmt with randomly generated nested blocks. *)
@@ -543,7 +628,16 @@ let gen_toplevel_funcdef ctx =
         ReturnStmt{ return_exprs } |> extend_block_stmt fd_body
       end
   in
-  FuncDefStmt{ fd_name; fd_args; fd_body; fd_ty }
+  let fd_id = mki () in
+  let fd = FuncDefStmt{ fd_id;
+                        fd_name;
+                        fd_args;
+                        fd_has_varags = false;
+                        fd_body;
+                        fd_ty }
+  in
+  ctx.ctx_func_def_map <- Map.set ctx.ctx_func_def_map ~key:fd_id ~data:(ref fd);
+  fd
 
 (** Generates a random table created using the assignment expression. *)
 let gen_table ctx =
@@ -609,17 +703,44 @@ let ctx_to_string ctx c =
   in
   String.concat [header; toplevel; exec_toplevel] ~sep:"\n"
 
+(** Generates a list of standard functions and saves them in the current
+    context. *)
+let gen_standard_functions ctx =
+  let gen_dummy_block () =
+    let block_env = env_mk () in
+    BlockStmt { block_stmts = [];
+                block_is_loop = false;
+                block_env }
+  in
+  let fd_id = mki () in
+  let gen_print ctx =
+    let fd = FuncDefStmt { fd_id;
+                           fd_name = "print";
+                           fd_args = [];
+                           fd_has_varags = true;
+                           fd_body = gen_dummy_block ();
+                           fd_ty = [TyNil] }
+    in
+    let ctx = { ctx with ctx_standard_functions = ctx.ctx_standard_functions @ [fd] } in
+    ctx.ctx_func_def_map <- Map.set ctx.ctx_func_def_map ~key:fd_id ~data:(ref fd);
+    ctx
+  in
+  gen_print ctx
+
 let generate c =
   let l = gen_layout c in
   let ctx_global_env = env_mk ()
   and ctx_seed =
     match c.c_seed with Some(v) -> v | _ -> Random.bits ()
-  in
+  and ctx_func_def_map = Map.empty (module Int) in
   let ctx = { ctx_stmts = [];
+              ctx_standard_functions = [];
+              ctx_func_def_map;
               ctx_free_idx = 0;
               ctx_global_env;
               ctx_seed; }
   in
+  let ctx = gen_standard_functions ctx in
   Random.init ctx_seed;
   let ctx = gen_top_stmts ctx l in
   ctx_to_string ctx c

@@ -12,6 +12,7 @@ type ty =
   | TyFunction
   | TyThread
   | TyTable
+[@@deriving equal]
 
 type operator =
   | OpAdd     (* + *)
@@ -48,7 +49,9 @@ and expr =
   | TableExpr of table_ty
   | LambdaExpr of { lambda_args: expr list;
                     lambda_body: stmt; }
-  | FuncCallExpr of func_call
+  | FuncCallExpr of { fc_id: int;
+                      fc_ty: func_call;
+                      fc_args: expr list }
   | UnExpr of { un_op: operator;
                 un_expr: expr }
   | BinExpr of { bin_lhs: expr;
@@ -61,10 +64,8 @@ and table_field =
   { tf_key: expr; tf_value: expr }
 and func_call =
   | FCMethod of { fcm_receiver: expr;
-                  fcm_method: string;
-                  fcm_args: expr list }
-  | FCFunc of { fcf_func: expr;
-                fcf_args: expr list }
+                  fcm_method: string; }
+  | FCFunc of { fcf_func: expr }
 
 and stmt =
   | AssignStmt of { assign_local: bool;
@@ -86,8 +87,10 @@ and stmt =
   | ForStmt of { for_names: expr list;
                  for_exprs: expr list;
                  for_body: stmt }
-  | FuncDefStmt of { fd_name: string;
+  | FuncDefStmt of { fd_id: int;
+                     fd_name: string;
                      fd_args: expr list;
+                     fd_has_varags: bool;
                      fd_body: stmt;
                      fd_ty: ty list }
   | ReturnStmt of { return_exprs: expr list }
@@ -98,6 +101,11 @@ and stmt =
 and loop_type =
   | While
   | Repeat
+
+let mki =
+  let r = ref 0 in
+  fun () -> incr r;
+  !r
 
 let ty_to_s = function
   | TyNil       -> "nil"
@@ -274,17 +282,17 @@ let rec expr_to_s stmt_to_s c expr =
         (expr_to_s' e.ag_key)
     end
   | FuncCallExpr e -> begin
-      match e with
+      match e.fc_ty with
       | FCFunc f -> begin
           Printf.sprintf "%s(%s)"
             (expr_to_s' f.fcf_func)
-            (exprs_to_cs stmt_to_s c f.fcf_args)
+            (exprs_to_cs stmt_to_s c e.fc_args)
         end
       | FCMethod m -> begin
           Printf.sprintf "%s:%s(%s)"
             (expr_to_s' m.fcm_receiver)
             m.fcm_method
-            (exprs_to_cs stmt_to_s c m.fcm_args)
+            (exprs_to_cs stmt_to_s c e.fc_args)
         end
     end
 
@@ -348,15 +356,15 @@ let rec stmt_to_s ?(cr = false) ?(depth = 0) c stmt =
   | FuncCallStmt s -> begin
       let (name, args_s) = match s.fc_expr with
         | FuncCallExpr fce -> begin
-            match fce with
+            match fce.fc_ty with
             | FCFunc f -> (get_ident_name f.fcf_func,
-                           exprs_to_cs stmt_to_s c f.fcf_args)
+                           exprs_to_cs stmt_to_s c fce.fc_args)
             | FCMethod m -> begin
                 let name = Printf.sprintf "%s:%s"
                     (get_ident_name m.fcm_receiver)
                     m.fcm_method
                 in
-                (name, exprs_to_cs stmt_to_s c m.fcm_args)
+                (name, exprs_to_cs stmt_to_s c fce.fc_args)
               end
           end
         | _ -> assert false

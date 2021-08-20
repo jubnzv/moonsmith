@@ -8,6 +8,7 @@ type ty =
   | TyFunction
   | TyThread
   | TyTable
+[@@deriving equal]
 
 type operator =
   | OpAdd     (* + *)
@@ -44,7 +45,9 @@ and expr =
   | TableExpr of table_ty
   | LambdaExpr of { lambda_args: expr list;
                     lambda_body: stmt; }
-  | FuncCallExpr of func_call
+  | FuncCallExpr of { fc_id: int;
+                      fc_ty: func_call;
+                      fc_args: expr list }
   | UnExpr of { un_op: operator;
                 un_expr: expr }
   | BinExpr of { bin_lhs: expr;
@@ -57,10 +60,8 @@ and table_field =
   { tf_key: expr; tf_value: expr }
 and func_call =
   | FCMethod of { fcm_receiver: expr;
-                  fcm_method: string;
-                  fcm_args: expr list }
-  | FCFunc of { fcf_func: expr;
-                fcf_args: expr list }
+                  fcm_method: string; }
+  | FCFunc of { fcf_func: expr }
 
 and stmt =
   | AssignStmt of { assign_local: bool;
@@ -82,8 +83,10 @@ and stmt =
   | ForStmt of { for_names: expr list;
                  for_exprs: expr list;
                  for_body: stmt }
-  | FuncDefStmt of { fd_name: string;
+  | FuncDefStmt of { fd_id: int;
+                     fd_name: string;
                      fd_args: expr list;
+                     fd_has_varags: bool;
                      fd_body: stmt;
                      fd_ty: ty list }
   | ReturnStmt of { return_exprs: expr list }
@@ -94,6 +97,9 @@ and stmt =
 and loop_type =
   | While
   | Repeat
+
+(** Generates unique identifier used in hash tables. *)
+val mki : unit -> int
 
 val ty_to_s : ty -> string
 
