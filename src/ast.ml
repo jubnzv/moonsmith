@@ -318,12 +318,13 @@ let rec stmt_to_s ?(cr = false) ?(depth = 0) c stmt =
   match stmt with
   | FuncDefStmt fd -> begin
       let docstring =
-        [ List.fold_left
+        [ let s = List.fold_left
             fd.fd_ty
             ~init:[]
             ~f:(fun acc ty -> acc @ [ty_to_s ty])
           |> String.concat ~sep:", "
-          |> Printf.sprintf "%s-- @return %s" (mk_i ())]
+          in let s = if String.is_empty s then "nil" else s in
+          Printf.sprintf "%s-- @return %s" (mk_i ()) s]
         |> List.append @@
         List.fold_left
           fd.fd_args
