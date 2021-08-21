@@ -7,7 +7,8 @@ type ty =
   | TyUserdata
   | TyFunction
   | TyThread
-  | TyTable
+  | TyTable of { tyt_id: int;
+                 tyt_method_ids: int list; }
 [@@deriving equal]
 
 type operator =
@@ -59,7 +60,7 @@ and table_ty =
 and table_field =
   { tf_key: expr; tf_value: expr }
 and func_call =
-  | FCMethod of { fcm_receiver: expr;
+  | FCMethod of { fcm_receiver: string;
                   fcm_method: string; }
   | FCFunc of { fcf_func: expr }
 
@@ -84,6 +85,9 @@ and stmt =
                  for_exprs: expr list;
                  for_body: stmt }
   | FuncDefStmt of { fd_id: int;
+                     (** Receiver (object) which this function belongs to.
+                         If not None, the function is a method. *)
+                     fd_receiver: string option;
                      fd_name: string;
                      fd_args: expr list;
                      fd_has_varags: bool;
@@ -102,6 +106,8 @@ and loop_type =
 val mki : unit -> int
 
 val ty_to_s : ty -> string
+
+val table_mk_empty : unit -> ty
 
 (** Returns type of the given [expr] when it is known. *)
 val get_essential_ty : expr -> ty option

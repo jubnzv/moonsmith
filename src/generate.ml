@@ -18,10 +18,16 @@ type context =
     (** Definitions of standard functions. *)
     ctx_standard_functions: stmt list;
 
-    (** Map that accociates id of the FuncDefStmt with pointer to its AST node. *)
+    (** User-defined configuration. *)
+    ctx_config : Config.t;
+
+    (** Map that associates ids of OOP tables with definitions of their methods. *)
+    mutable ctx_oop_table_methods_map: (int, stmt ref list, Int.comparator_witness) Base.Map.t;
+
+    (** Map that accociates ids of FuncDefStmts with pointer to their AST nodes. *)
     mutable ctx_func_def_map: (int, stmt ref, Int.comparator_witness) Base.Map.t;
 
-    (** Next free index used to generate unique names. *)
+    (** Next free index used to generate unique identifiers. *)
     mutable ctx_free_idx: int;
 
     (** Seed used to initialize PRG. *)
@@ -46,7 +52,7 @@ let gen_ty () =
   | 2 -> TyNumber
   | 3 -> TyString
   | 4 -> TyFunction
-  | _ -> TyTable
+  | _ -> table_mk_empty ()
 
 (** Creates a new identifier in the [env].
     The created identifier won't implicitly added to the environment, because
@@ -112,9 +118,9 @@ let gen_simple_typed_expr ty =
       | true -> TrueExpr
       | _ -> FalseExpr
     end
-  | TyNumber -> NumberExpr(Random.float 100.0)
-  | TyString -> StringExpr(StringGen.gen_string ())
-  | TyTable -> gen_random_table_init ()
+  | TyNumber  -> NumberExpr(Random.float 100.0)
+  | TyString  -> StringExpr(StringGen.gen_string ())
+  | TyTable _ -> gen_random_table_init ()
   | TyThread | TyUserdata | TyFunction -> NilExpr
 
 (** Generates unary expression that return result with the given type.
@@ -301,7 +307,7 @@ let gen_init_stmt_for_ident ?(assign_local = false) expr =
                       lambda_body }
           |> gen_stmt
         end
-      | TyTable -> gen_random_table_init () |> gen_stmt
+      | TyTable _ -> gen_random_table_init () |> gen_stmt
       | TyUserdata | TyThread -> assert false
     end
   | _ -> assert false
@@ -328,10 +334,16 @@ let gen_fcall_from_fdef stmt =
               end)
         |> Caml.List.split
       in
-      let fcf_func = IdentExpr{ id_name = fd.fd_name;
-                                id_ty = TyFunction }
+      let fc_ty = match fd.fd_receiver with
+        | Some r -> FCMethod { fcm_receiver = r;
+                               fcm_method = fd.fd_name }
+        | None -> begin
+            let fcf_func = IdentExpr{ id_name = fd.fd_name;
+                                      id_ty = TyFunction }
+            in
+            FCFunc{ fcf_func }
+          end
       in
-      let fc_ty = FCFunc{ fcf_func } in
       let fc_expr = FuncCallExpr{ fc_id = fd.fd_id;
                                   fc_ty;
                                   fc_args }
@@ -429,7 +441,11 @@ let gen_func_call_stmt env ctx =
       let fcf_func = IdentExpr{ id_name = fdd.fd_name;
                                 id_ty = TyFunction }
       in
-      let fc_ty = FCFunc{ fcf_func } in
+      let fc_ty = match fdd.fd_receiver with
+        | Some r -> FCMethod { fcm_receiver = r;
+                               fcm_method = fdd.fd_name }
+        | None -> FCFunc{ fcf_func }
+      in
       let fd = FuncDefStmt{ fdd with fd_id = fdd.fd_id } in
       let fc_args = gen_args fd in
       let fc_expr = FuncCallExpr{ fc_id = fdd.fd_id;
@@ -578,8 +594,12 @@ let extend_block_stmt block stmt =
     end
   | _ -> block
 
-(** Generates a random function defined on the top-level. *)
-let gen_toplevel_funcdef ctx =
+(** Generates a random function defined on the top-level.
+    [fd_receiver] is an optional name of the object which the generated function
+                  definition belongs to. If it set to Some value, the function
+                  is a method.
+    Returns generated FuncDefStmt and unique identifier of generated function. *)
+let gen_toplevel_funcdef ?(fd_receiver = None) ctx =
   let gen_arg n env =
     let name = Printf.sprintf "a%d" n in
     mk_ident env ctx ~add_now:true ~name:(Some(name))
@@ -608,7 +628,7 @@ let gen_toplevel_funcdef ctx =
       | TyBoolean -> gen_simple_typed_expr TyBoolean
       | TyNumber  -> gen_simple_typed_expr TyNumber
       | TyString  -> gen_simple_typed_expr TyString
-      | TyTable   -> gen_simple_typed_expr TyTable
+      | TyTable _ -> gen_simple_typed_expr @@ table_mk_empty ()
       | TyThread | TyUserdata | TyFunction -> NilExpr
     in
     (* Function that returns doesn't have expr types is a routine. We don't
@@ -618,7 +638,9 @@ let gen_toplevel_funcdef ctx =
     else
       Some(List.fold_left return_types ~init:[] ~f:(fun acc e -> acc @ [get_ty e]))
   in
-  let fd_name = Printf.sprintf "func%d" @@ get_free_idx ctx
+  let fd_name = match fd_receiver with
+    | Some _ -> Printf.sprintf "m%d"    @@ get_free_idx ctx
+    | None   -> Printf.sprintf "func%d" @@ get_free_idx ctx
   and fd_body = gen_block 0 ctx false ctx.ctx_global_env 10 in
   let fd_args = gen_args 5 (get_block_env_exn fd_body)
   and fd_ty  = gen_return_types () in
@@ -630,6 +652,7 @@ let gen_toplevel_funcdef ctx =
   in
   let fd_id = mki () in
   let fd = FuncDefStmt{ fd_id;
+                        fd_receiver;
                         fd_name;
                         fd_args;
                         fd_has_varags = false;
@@ -637,31 +660,59 @@ let gen_toplevel_funcdef ctx =
                         fd_ty }
   in
   ctx.ctx_func_def_map <- Map.set ctx.ctx_func_def_map ~key:fd_id ~data:(ref fd);
-  fd
+  (fd, fd_id)
 
-(** Generates a random table created using the assignment expression. *)
-let gen_table ctx =
-  let assign_local = if Random.bool () then true else false
-  and name = IdentExpr{ id_name = Printf.sprintf "t%d" @@ get_free_idx ctx;
-                        id_ty = TyTable }
-  and init = TableExpr(THashMap{table_fields = []})
+(** Generates a random OOP table defined on the top-level.
+
+    The generated table will be an object in OOP sense. It can contain some
+    methods, it can be inherited using `setmetatable` function, it can have
+    some special __-methods.
+
+    For more details, see: https://www.lua.org/pil/16.html *)
+let gen_toplevel_oop_table ctx =
+  let generate_methods table_name num =
+    let rec aux acc num =
+      if List.length acc >= num then acc
+      else begin
+        let (fd, fd_id) = gen_toplevel_funcdef ~fd_receiver:(Some(table_name)) ctx in
+        let acc = acc @ [(fd, fd_id)] in
+        aux acc num
+      end
+    in
+    aux [] num
   in
-  AssignStmt{ assign_local;
-              assign_lhs = [name];
-              assign_rhs = [init] }
+  let generate_assign table_name id method_ids =
+    let id_ty = TyTable{ tyt_id = id;
+                         tyt_method_ids = method_ids } in
+    let assign_local = if Random.bool () then true else false
+    and name = IdentExpr{ id_name = table_name;
+                          id_ty }
+    (* TODO: Save names and types of the fields somewhere. *)
+    and init = TableExpr(THashMap{table_fields = []}) in
+    AssignStmt{ assign_local;
+                assign_lhs = [name];
+                assign_rhs = [init] }
+  in
+  let table_id = get_free_idx ctx in
+  let table_name = Printf.sprintf "tobj%d" table_id  in
+  let methods = generate_methods table_name @@ Random.int_incl 0 4 in
+  let (method_fds, method_ids) = Caml.List.split methods in
+  [generate_assign table_name table_id method_ids] @ method_fds
 
 (** Generates top-level statements for the given [ctx]. *)
 let gen_top_stmts ctx l =
-  let gen_top_stmt ctx =
-    match Random.bool () with
-    | true -> gen_toplevel_funcdef ctx
-    | _ -> gen_table ctx
+  let gen_toplevel_funcdef' ctx =
+    let (fd, _) = gen_toplevel_funcdef ctx in [fd]
   in
   let rec aux ctx acc =
-    if List.length acc >= l.toplevel_stmts then
+    let len = List.length acc in
+    if len >= l.toplevel_stmts then
       acc
+    else if ctx.ctx_config.c_generate_oop_tables &&
+            (len < (l.toplevel_stmts / 2)) then
+      aux ctx (acc @ gen_toplevel_oop_table ctx)
     else
-      aux ctx (acc @ [gen_top_stmt ctx])
+      aux ctx (acc @ gen_toplevel_funcdef' ctx)
   in
   { ctx with ctx_stmts = (aux ctx []) }
 
@@ -715,6 +766,7 @@ let gen_standard_functions ctx =
   let fd_id = mki () in
   let gen_print ctx =
     let fd = FuncDefStmt { fd_id;
+                           fd_receiver = None;
                            fd_name = "print";
                            fd_args = [];
                            fd_has_varags = true;
@@ -732,10 +784,13 @@ let generate c =
   let ctx_global_env = env_mk ()
   and ctx_seed =
     match c.c_seed with Some(v) -> v | _ -> Random.bits ()
-  and ctx_func_def_map = Map.empty (module Int) in
+  and ctx_func_def_map = Map.empty (module Int)
+  and ctx_oop_table_methods_map = Map.empty (module Int) in
   let ctx = { ctx_stmts = [];
               ctx_standard_functions = [];
+              ctx_config = c;
               ctx_func_def_map;
+              ctx_oop_table_methods_map;
               ctx_free_idx = 0;
               ctx_global_env;
               ctx_seed; }

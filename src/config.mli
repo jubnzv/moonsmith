@@ -11,7 +11,11 @@ type t =
     (** Seed used to initialize random generator. If None, seed will be choosen randomly. *)
     c_seed: int option;
 
-    (** Forces to execute each function occurred on the top-level. *)
+    (** If true, generates random OOP tables with methods, inheritance, etc. *)
+    c_generate_oop_tables: bool;
+
+    (** Add additional statements at the end of top-level that execute each
+        function and method on the top-level. *)
     c_execute_toplevel: bool }
 
 val mk_default : unit -> t

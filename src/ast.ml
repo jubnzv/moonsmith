@@ -11,7 +11,8 @@ type ty =
   | TyUserdata
   | TyFunction
   | TyThread
-  | TyTable
+  | TyTable of { tyt_id: int;
+                 tyt_method_ids: int list; }
 [@@deriving equal]
 
 type operator =
@@ -63,7 +64,7 @@ and table_ty =
 and table_field =
   { tf_key: expr; tf_value: expr }
 and func_call =
-  | FCMethod of { fcm_receiver: expr;
+  | FCMethod of { fcm_receiver: string;
                   fcm_method: string; }
   | FCFunc of { fcf_func: expr }
 
@@ -88,6 +89,9 @@ and stmt =
                  for_exprs: expr list;
                  for_body: stmt }
   | FuncDefStmt of { fd_id: int;
+                     (** Receiver (object) which this function belongs to.
+                         If not None, the function is a method. *)
+                     fd_receiver: string option;
                      fd_name: string;
                      fd_args: expr list;
                      fd_has_varags: bool;
@@ -105,7 +109,7 @@ and loop_type =
 let mki =
   let r = ref 0 in
   fun () -> incr r;
-  !r
+    !r
 
 let ty_to_s = function
   | TyNil       -> "nil"
@@ -115,7 +119,11 @@ let ty_to_s = function
   | TyUserdata  -> "userdata"
   | TyFunction  -> "function"
   | TyThread    -> "thread"
-  | TyTable     -> "table"
+  | TyTable _   -> "table"
+
+let table_mk_empty () =
+  TyTable{ tyt_id = -1;
+           tyt_method_ids = [] }
 
 let get_essential_ty expr =
   match expr with
@@ -124,7 +132,7 @@ let get_essential_ty expr =
   | NumberExpr _         -> Some(TyNumber)
   | StringExpr _         -> Some(TyString)
   | IdentExpr id         -> Some(id.id_ty)
-  | TableExpr _          -> Some(TyTable)
+  | TableExpr _          -> Some(table_mk_empty ())
   | LambdaExpr _         -> Some(TyFunction)
   | _ -> None
 
@@ -137,7 +145,7 @@ let types_are_comparable ty_lhs ty_rhs =
   | (TyUserdata, TyUserdata) -> false
   | (TyFunction, TyFunction) -> false
   | (TyThread, TyThread)     -> false
-  | (TyTable, TyTable)       -> false
+  | (TyTable _ , TyTable _)  -> false
   | _ -> false
 
 let get_block_env_exn = function
@@ -297,7 +305,7 @@ let rec expr_to_s stmt_to_s c expr =
         end
       | FCMethod m -> begin
           Printf.sprintf "%s:%s(%s)"
-            (expr_to_s' m.fcm_receiver)
+            (m.fcm_receiver)
             m.fcm_method
             (exprs_to_cs stmt_to_s c e.fc_args)
         end
@@ -326,10 +334,10 @@ let rec stmt_to_s ?(cr = false) ?(depth = 0) c stmt =
   | FuncDefStmt fd -> begin
       let docstring =
         [ let s = List.fold_left
-            fd.fd_ty
-            ~init:[]
-            ~f:(fun acc ty -> acc @ [ty_to_s ty])
-          |> String.concat ~sep:", "
+              fd.fd_ty
+              ~init:[]
+              ~f:(fun acc ty -> acc @ [ty_to_s ty])
+                  |> String.concat ~sep:", "
           in let s = if String.is_empty s then "nil" else s in
           Printf.sprintf "%s-- @return %s" (mk_i ()) s]
         |> List.append @@
@@ -351,11 +359,14 @@ let rec stmt_to_s ?(cr = false) ?(depth = 0) c stmt =
           ~f:(fun acc stmt ->
               acc @ [stmt_to_s c stmt ~depth:(depth + 1)])
                       |> String.concat ~sep:"\n"
+      and name = match fd.fd_receiver with
+      | Some r -> Printf.sprintf "%s:%s" r fd.fd_name
+      | None -> fd.fd_name
       in
       Printf.sprintf "%s\n%sfunction %s(%s)\n%s\n%send%s"
         docstring
         (mk_i ())
-        fd.fd_name
+        name
         args_code
         body_code
         (mk_i ())
@@ -368,9 +379,7 @@ let rec stmt_to_s ?(cr = false) ?(depth = 0) c stmt =
             | FCFunc f -> (get_ident_name f.fcf_func,
                            exprs_to_cs stmt_to_s c fce.fc_args)
             | FCMethod m -> begin
-                let name = Printf.sprintf "%s:%s"
-                    (get_ident_name m.fcm_receiver)
-                    m.fcm_method
+                let name = Printf.sprintf "%s:%s" m.fcm_receiver m.fcm_method
                 in
                 (name, exprs_to_cs stmt_to_s c fce.fc_args)
               end
