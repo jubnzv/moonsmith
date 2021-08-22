@@ -21,6 +21,19 @@ def signal_handler(sig, frame):
     sys.exit(0)
 
 
+def append_file(filename, line):
+    with open(filename, 'a') as f:
+        f.write(line)
+
+
+def get_comment_header(out):
+    comment_lines = ["\n"]
+    for line in out.split("\n"):
+        comment_lines.append("-- " + line)
+    comment_lines = comment_lines[:len(comment_lines)-1]
+    return "\n".join(comment_lines)
+
+
 def run():
     i = 0
     try:
@@ -37,7 +50,7 @@ def run():
             logging.info(f"Passed {i} tests")
         i = i + 1
         try:
-            out = subprocess.check_output(g_exe,
+            out = subprocess.check_output([g_exe, "-S", "1"],
                                           stderr=subprocess.STDOUT,
                                           timeout=g_timeout_s)
         except subprocess.CalledProcessError as e:
@@ -50,9 +63,12 @@ def run():
         except subprocess.CalledProcessError as e:
             out = e.output.decode("utf-8")
             print(f"{i}: Exception while executing Lua: {out}")
+            # Write to the end to see correct number of line for an error.
+            append_file("out.lua", get_comment_header(out))
             subprocess.run(["cp", "out.lua", f"test/out/{i}.lua"])
         except subprocess.TimeoutExpired:
-            continue
+            print(f"{i}: Timeout while executing Lua")
+            subprocess.run(["cp", "out.lua", f"test/out/{i}.lua"])
 
 
 if __name__ == '__main__':

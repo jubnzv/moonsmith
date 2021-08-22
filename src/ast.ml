@@ -6,7 +6,8 @@ exception InternalError of string
 type ty =
   | TyNil
   | TyBoolean
-  | TyNumber
+  | TyInt
+  | TyFloat
   | TyString
   | TyUserdata
   | TyFunction
@@ -15,11 +16,13 @@ type ty =
                  tyt_method_ids: int list; }
 [@@deriving equal]
 
+(** See: https://www.lua.org/manual/5.3/manual.html#3.4.1 *)
 type operator =
   | OpAdd     (* + *)
   | OpSub     (* - *)
   | OpMul     (* * *)
   | OpDiv     (* / *)
+  | OpFloor   (* // *)
   | OpPow     (* ^ *)
   | OpMod     (* % *)
   | OpConcat  (* .. *)
@@ -29,6 +32,13 @@ type operator =
   | OpGte     (* >= *)
   | OpEq      (* == *)
   | OpNeq     (* ~= *)
+  | OpBAnd    (* & *)
+  | OpBOr     (* ~ *)
+  | OpBRs     (* >> *)
+  | OpBLs     (* << *)
+  | OpBNot    (* ~ *)
+  | OpAnd     (* and *)
+  | OpOr      (* or *)
   | OpNot     (* not *)
   | OpLen     (* # *)
 
@@ -41,7 +51,8 @@ and expr =
   | TrueExpr
   | FalseExpr
   | NilExpr
-  | NumberExpr of float
+  | IntExpr of int
+  | FloatExpr of float
   | StringExpr of string
   | IdentExpr of { id_name: string;
                    id_ty: ty }
@@ -114,7 +125,8 @@ let mki =
 let ty_to_s = function
   | TyNil       -> "nil"
   | TyBoolean   -> "boolean"
-  | TyNumber    -> "number"
+  | TyInt       -> "int"
+  | TyFloat     -> "float"
   | TyString    -> "string"
   | TyUserdata  -> "userdata"
   | TyFunction  -> "function"
@@ -129,7 +141,8 @@ let get_essential_ty expr =
   match expr with
   | TrueExpr | FalseExpr -> Some(TyBoolean)
   | NilExpr              -> Some(TyNil)
-  | NumberExpr _         -> Some(TyNumber)
+  | IntExpr _            -> Some(TyInt)
+  | FloatExpr _          -> Some(TyFloat)
   | StringExpr _         -> Some(TyString)
   | IdentExpr id         -> Some(id.id_ty)
   | TableExpr _          -> Some(table_mk_empty ())
@@ -140,7 +153,10 @@ let types_are_comparable ty_lhs ty_rhs =
   match (ty_lhs, ty_rhs) with
   | (TyNil, TyNil)           -> false
   | (TyBoolean, TyBoolean)   -> false
-  | (TyNumber, TyNumber)     -> true
+  | (TyInt, TyInt)           -> true
+  | (TyInt, TyFloat)         -> true
+  | (TyFloat, TyInt)         -> true
+  | (TyFloat, TyFloat)       -> true
   | (TyString, TyString)     -> true
   | (TyUserdata, TyUserdata) -> false
   | (TyFunction, TyFunction) -> false
@@ -157,6 +173,7 @@ let op_to_s = function
   | OpSub     ->  "-"
   | OpMul     ->  "*"
   | OpDiv     ->  "/"
+  | OpFloor   ->  "//"
   | OpPow     ->  "^"
   | OpMod     ->  "%"
   | OpConcat  ->  ".."
@@ -167,6 +184,13 @@ let op_to_s = function
   | OpEq      ->  "=="
   | OpNeq     ->  "~="
   | OpNot     ->  "not"
+  | OpBAnd    ->  "&"
+  | OpBOr     ->  "~"
+  | OpBRs     ->  ">>"
+  | OpBLs     ->  "<<"
+  | OpBNot    ->  "~"
+  | OpAnd     ->  "and"
+  | OpOr      ->  "or"
   | OpLen     ->  "#"
 
 let env_mk () =
@@ -267,17 +291,11 @@ let rec expr_to_s stmt_to_s c expr =
       in
       Printf.sprintf "function (%s) %s end" args_s body_s
     end
-  | NumberExpr v -> begin
-      match Random.int_incl 0 4 with
-      | 0 (* float *) -> Printf.sprintf "%f" v
-      | _ (* number *) -> begin
-          let n = Float.iround_towards_zero_exn v in
-          Printf.sprintf "%d" n
-        end
-    end
+  | IntExpr n -> Printf.sprintf "%d" n
+  | FloatExpr n -> Printf.sprintf "%f" n
   | UnExpr e -> begin
       let s = match e.un_op with
-        | OpSub -> ""
+        | OpSub | OpLen -> ""
         | _ -> " "
       in
       Printf.sprintf "%s%s%s"
@@ -360,8 +378,8 @@ let rec stmt_to_s ?(cr = false) ?(depth = 0) c stmt =
               acc @ [stmt_to_s c stmt ~depth:(depth + 1)])
                       |> String.concat ~sep:"\n"
       and name = match fd.fd_receiver with
-      | Some r -> Printf.sprintf "%s:%s" r fd.fd_name
-      | None -> fd.fd_name
+        | Some r -> Printf.sprintf "%s:%s" r fd.fd_name
+        | None -> fd.fd_name
       in
       Printf.sprintf "%s\n%sfunction %s(%s)\n%s\n%send%s"
         docstring

@@ -2,7 +2,8 @@
 type ty =
   | TyNil
   | TyBoolean
-  | TyNumber
+  | TyInt
+  | TyFloat
   | TyString
   | TyUserdata
   | TyFunction
@@ -11,11 +12,13 @@ type ty =
                  tyt_method_ids: int list; }
 [@@deriving equal]
 
+(** See: https://www.lua.org/manual/5.3/manual.html#3.4.1 *)
 type operator =
   | OpAdd     (* + *)
   | OpSub     (* - *)
   | OpMul     (* * *)
   | OpDiv     (* / *)
+  | OpFloor   (* // *)
   | OpPow     (* ^ *)
   | OpMod     (* % *)
   | OpConcat  (* .. *)
@@ -25,6 +28,13 @@ type operator =
   | OpGte     (* >= *)
   | OpEq      (* == *)
   | OpNeq     (* ~= *)
+  | OpBAnd    (* & *)
+  | OpBOr     (* ~ *)
+  | OpBRs     (* >> *)
+  | OpBLs     (* << *)
+  | OpBNot    (* ~ *)
+  | OpAnd     (* and *)
+  | OpOr      (* or *)
   | OpNot     (* not *)
   | OpLen     (* # *)
 
@@ -37,7 +47,8 @@ and expr =
   | TrueExpr
   | FalseExpr
   | NilExpr
-  | NumberExpr of float
+  | IntExpr of int
+  | FloatExpr of float
   | StringExpr of string
   | IdentExpr of { id_name: string;
                    id_ty: ty }

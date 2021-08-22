@@ -1,12 +1,8 @@
-# Moonsmith
+# moonsmith
 
 *This project is not ready yet and is still in active development.*
 
-Moonsmith is a generator of random Lua programs.
-
-It could be used to evaluate tooling that works with Lua.
-
-Currently it supports Lua 5.1.
+moonsmith is a generator of random Lua 5.3 programs. It could be used to evaluate tooling that works with Lua.
 
 ## Installation
 
