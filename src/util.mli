@@ -1,5 +1,3 @@
-open Core_kernel
-
 (** Randomly chooses one element from the list. *)
 val choose_one : 'a list -> 'a
 

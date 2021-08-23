@@ -2,26 +2,36 @@ open Core_kernel
 
 (** Random code generation context. *)
 type t = {
-  (** Statements that defines a global data on the top-level. *)
   mutable ctx_datum_stmts: Ast.stmt list;
-  (** Functions and methods defined on the top-level. *)
+  (** Statements that defines a global data on the top-level. *)
+
   ctx_funcdef_stmts: Ast.stmt list;
-  (** Function calls defined on the top-level. *)
+  (** Functions and methods defined on the top-level. *)
+
   ctx_call_stmts: Ast.stmt list;
-  (** Statements that combine and print result data. *)
+  (** Function calls defined on the top-level. *)
+
   ctx_result_stmts: Ast.stmt list;
-  (** Global environment for the top-level. *)
+  (** Statements that combine and print result data. *)
+
   ctx_global_env: Ast.env;
-  (** Definitions of standard functions. *)
+  (** Global environment for the top-level. *)
+
   ctx_standard_functions: Ast.stmt list;
-  (** User-defined configuration. *)
+  (** Definitions of standard functions. *)
+
   ctx_config : Config.t;
-  (** Map that associates ids of OOP tables with definitions of their methods. *)
+  (** User-defined configuration. *)
+
   mutable ctx_oop_table_methods_map: (int, Ast.stmt ref list, Int.comparator_witness) Base.Map.t;
-  (** Map that associates ids of FuncDefStmts with pointer to their AST nodes. *)
+  (** Map that associates ids of OOP tables with definitions of their methods. *)
+
   mutable ctx_func_def_map: (int, Ast.stmt ref, Int.comparator_witness) Base.Map.t;
+  (** Map that associates ids of FuncDefStmts with pointer to their AST nodes. *)
+
+  ctx_seed: int;
   (** Seed used to initialize PRG. *)
-  ctx_seed: int; }
+}
 
 let mk_context (c : Config.t) =
   let ctx_global_env = Ast.env_mk ()
