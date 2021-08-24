@@ -136,7 +136,7 @@ val env_mk : unit -> env
 val env_empty : env -> bool
 val env_has_parent : env -> bool
 val env_get_parent_exn : env -> env
-val env_take_rand_exn : env -> expr ref
+val env_peek_random_exn : env -> expr ref
 val env_add_binding : env -> expr -> unit
 val env_add_pending_binding : env -> expr -> unit
 val env_flush_pending_bindings : env -> unit

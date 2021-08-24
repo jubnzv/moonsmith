@@ -210,7 +210,7 @@ let env_get_parent_exn env =
   | Some parent -> !parent
   | None -> raise @@ InternalError "Env has no parent!"
 
-let env_take_rand_exn env =
+let env_peek_random_exn env =
   let idx = Random.int_incl 0 @@ (List.length env.env_bindings) - 1 in
   List.nth_exn env.env_bindings idx
 
@@ -294,14 +294,15 @@ let rec expr_to_s stmt_to_s c expr =
   | IntExpr n -> Printf.sprintf "%d" n
   | FloatExpr n -> Printf.sprintf "%f" n
   | UnExpr e -> begin
-      let s = match e.un_op with
-        | OpSub | OpLen -> ""
-        | _ -> " "
+      let (sl, sr) = match e.un_op with
+        | OpSub | OpLen -> "(", ")"
+        | _ -> " ", ""
       in
-      Printf.sprintf "%s%s%s"
+      Printf.sprintf "%s%s%s%s"
         (op_to_s e.un_op)
-        s
+        sl
         (expr_to_s' e.un_expr)
+        sr
     end
   | BinExpr e -> begin
       Printf.sprintf "%s %s %s"

@@ -20,8 +20,14 @@ type t = {
   c_use_length: bool;
   (** Use tostring(). *)
   c_use_tostring: bool;
+  (** Use string.upper(). *)
+  c_use_string_upper: bool;
+  (** Use string.lower(). *)
+  c_use_string_lower: bool;
   (** Use string.sub(). *)
   c_use_string_sub: bool;
+  (** Use math.log() *)
+  c_use_math_log: bool;
   (** Use math.floor(). *)
   c_use_math_floor: bool;
 }
@@ -37,5 +43,8 @@ let mk_default () =
     c_gen_oop_methods = true;
     c_use_length = true;
     c_use_tostring = true;
+    c_use_string_upper = true;
+    c_use_string_lower = true;
     c_use_string_sub = true;
+    c_use_math_log = true;
     c_use_math_floor = true; }

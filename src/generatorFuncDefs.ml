@@ -1,5 +1,7 @@
 open Core_kernel
 
+exception ConfigError of string
+
 (** Generate expressions used in ReturnStmt of the function. *)
 let gen_return_exprs return_types =
   let open Ast in
@@ -33,7 +35,7 @@ let peek_receiver ctx =
         let tables_idxes = Context.get_datum_tables_i ctx in
         if phys_equal 0 @@ List.length tables_idxes then None
         else begin
-          let (idx, table) = Util.choose_one tables_idxes in
+          let (idx, table) = Util.choose_one_exn tables_idxes in
           match table with
           | Ast.IdentExpr id -> Some(idx, id.id_name)
           | _ -> None
@@ -110,14 +112,55 @@ let gen_local_def_stmt ctx env =
     end
   in
   let (assign_lhs, assign_rhs) = aux [] |> Caml.List.split in
-  Ast.AssignStmt { assign_local = Random.bool ();
-                   assign_lhs;
-                   assign_rhs }
+  Ast.env_flush_pending_bindings env;
+  Ast.AssignStmt{ assign_local = Random.bool ();
+                  assign_lhs;
+                  assign_rhs }
 
 (** Generates a random mutation statement that never changes control flow
     (i.e. no loops, no conditions). *)
 let gen_linear_mutation_stmt ctx env =
-  GenUtil.gen_dummy_block ()
+  (* Peek lhs for mutation. Prefer local variables to global datums. *)
+  let peek_lhs () =
+    match Random.int_incl 0 3 with
+    (* TODO: Sometimes we could unintentionally assign a new value
+             to datum. This will override previous method definitions.
+             So this case needs some special logic. *)
+    (* | 0 -> Context.peek_random_datum_exn ctx *)
+    | _ -> !(Ast.env_peek_random_exn env)
+  in
+  (* Randomly peek some idents for the rhs.
+     Or just generate some simple expressions. *)
+  let peek_rhs_parts () =
+    let rhs_num = Random.int_incl 2 8 in
+    let peek () =
+      match Random.int_incl 0 8 with
+      (* TODO: Need figure out with types of the lhs. *)
+      (* | 0         -> Context.peek_random_datum_exn ctx *)
+      | 1 | 2 | 3 -> !(Ast.env_peek_random_exn env)
+      | _         -> GenUtil.gen_simple_expr ()
+    in
+    let rec gen acc =
+      if (List.length acc) > rhs_num then acc
+      else begin
+        gen (acc @ [peek ()])
+      end
+    in
+    gen []
+  in
+  let lhs = peek_lhs () in
+  let ty = match lhs with
+    | IdentExpr id -> id.id_ty
+    | _ -> assert false
+  in
+  let rhs_opt = peek_rhs_parts () |> GenUtil.combine_to_typed_expr ctx ty in
+  match rhs_opt with
+  | Some rhs -> begin
+      Ast.AssignStmt{ assign_local = false;
+                      assign_lhs = [lhs];
+                      assign_rhs = [rhs]; }
+    end
+  | None -> raise @@ ConfigError "Can't combine expressions using this config. Try to enable more functions."
 
 (** Generates a random statement that changes some data in the in the given
     [env] or changes some global datum in [ctx.ctx_datum_stmts]. *)

@@ -68,6 +68,12 @@ let get_datum_tables ctx =
     | _ -> false
   in List.filter ctx.ctx_datum_stmts ~f:ff
 
+let peek_random_datum_exn ctx =
+  let open Ast in
+  match Util.choose_one_exn ctx.ctx_datum_stmts with
+  | AssignStmt assign -> List.nth_exn assign.assign_lhs 0
+  | _ -> assert false
+
 let peek_typed_datum ctx ty =
   let open Ast in
   let filter stmt =
@@ -87,7 +93,7 @@ let peek_typed_datum ctx ty =
   in
   if phys_equal 0 @@ List.length datums_with_same_ty then None
   else begin
-    match Util.choose_one datums_with_same_ty with
+    match Util.choose_one_exn datums_with_same_ty with
     | AssignStmt assign -> List.nth assign.assign_lhs 0
     | _ -> assert false
   end

@@ -38,6 +38,9 @@ val mk_context : Config.t -> t
 (** Returns a list of available tables defined in [ctx.ctx_datum_stmts]. *)
 val get_datum_tables : t -> Ast.stmt list
 
+(** Peeks random lhs of [ctx.ctx_datum_stmts]. *)
+val peek_random_datum_exn : t -> Ast.expr
+
 (** Peeks random lhs of [ctx.ctx_datum_stmts] which has requested type.
     Returns None if there is no datums with such type. *)
 val peek_typed_datum : t -> Ast.ty -> Ast.expr option

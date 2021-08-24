@@ -19,11 +19,15 @@ val gen_simple_typed_expr : Ast.ty -> Ast.expr
 val gen_random_table_init : unit -> Ast.expr
 
 (** Creates a new identifier in the [env].
+
     The created identifier won't implicitly added to the environment, because
     in some cases we should delay this. For example, we want to avoid the
     following situation:
       local a1, a2 = "foo", a1
-    a1 is used before it was defined, so this causes a problem. *)
+    a1 is used before it was defined, so this causes a problem.
+
+    So, user *must* call [Ast.env_flush_pending_bindings] after adding statements
+    when [add_now] is false. *)
 val gen_ident : ?add_now:bool -> ?name:(string option) -> Ast.env -> Ast.expr
 
 (** Generates a [BlockStmt] without any nested statements. *)
@@ -44,3 +48,7 @@ val gen_init_stmt_for_ident : ?assign_local:bool -> Ast.expr -> Ast.stmt
 (** Takes a random binding from the [env] or one of its parents.
     Returns None if environment and parents are empty. *)
 val take_random_binding : Ast.env -> Ast.expr ref option
+
+(** Takes a list of expression and combines them to a single expression that
+    will have requested result type. *)
+val combine_to_typed_expr : Context.t -> Ast.ty -> Ast.expr list -> Ast.expr option
