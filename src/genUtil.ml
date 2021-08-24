@@ -272,8 +272,10 @@ let gen_combine_un_funcall ctx ty =
   | TyThread | TyUserdata -> None
 
 (** Generates binary operator which can take two expressions of type [ty] and
-    returns an expression of the same [ty]. *)
-let gen_combine_binop ty =
+    returns an expression of the same [ty]. The type of the generated operator
+    depends of values of [lhs] and [rhs], because we must avoid result
+    expresssions which exceeds Lua's number limits. *)
+let gen_combine_binop ty lhs rhs =
   let open Ast in
   match ty with
   | TyNil      -> None
@@ -283,24 +285,56 @@ let gen_combine_binop ty =
       | _    -> Some(OpNeq) (* ~= *)
     end
   | TyInt      -> begin
-      match Random.int_incl 0 9 with
-      | 0 -> Some(OpAdd)  (* + *)
-      | 1 -> Some(OpSub)  (* - *)
-      | 2 -> Some(OpMul)  (* * *)
-      | 4 -> Some(OpPow)  (* ^ *)
-      | 5 -> Some(OpMod)  (* % *)
-      | 6 -> Some(OpBAnd) (* & *)
-      | 7 -> Some(OpBOr)  (* ~ *)
-      | 8 -> Some(OpBRs)  (* >> *)
-      | _ -> Some(OpBLs)  (* << *)
+      (* Chooses "safe" operand that won't cause number overflow. *)
+      let select_safe () =
+        match Random.int_incl 0 4 with
+        | 0 -> Some(OpAdd)  (* + *)
+        | 1 -> Some(OpSub)  (* - *)
+        | 3 -> Some(OpBAnd) (* & *)
+        | _ -> Some(OpBOr)  (* ~ *)
+      in
+      match lhs, rhs with
+      | IntExpr(l), IntExpr(r) -> begin
+          (* If we have both even integers, we could safely divide them. *)
+          if (phys_equal (l % 2) 0) && (phys_equal (r % 2) 0) &&
+             (not @@ phys_equal r 0) then
+            if Random.bool() then
+              Some(OpDiv) (* / *)
+            else
+              Some(OpMod) (* % *)
+          else if (l < 10) && (r < 3) then
+            (* We could safely perform some operations on small integers. *)
+            match Random.int_incl 0 4 with
+            | 0 -> Some(OpPow)  (* ^ *)
+            | 1 -> Some(OpBRs)  (* >> *)
+            | 2 -> Some(OpMul)  (* * *)
+            | _ -> Some(OpBLs)  (* << *)
+          else
+            select_safe ()
+        end
+      | _ -> select_safe ()
     end
   | TyFloat    -> begin
-      match Random.int_incl 0 5 with
-      | 0 -> Some(OpAdd)  (* + *)
-      | 1 -> Some(OpSub)  (* - *)
-      | 2 -> Some(OpMul)  (* * *)
-      | 4 -> Some(OpPow)  (* ^ *)
-      | _ -> Some(OpMod)  (* % *)
+      (* Select operator that can't cause number overflow or zero division. *)
+      let select_safe () =
+        if Random.bool () then
+          Some(OpAdd)  (* + *)
+        else
+          Some(OpSub)  (* - *)
+      in
+      match lhs, rhs with
+      | FloatExpr(l), FloatExpr(r) -> begin
+          if ((int_of_float l) < 10) &&
+             ((int_of_float r) < 3) &&
+             (not @@ phys_equal r 0.0) then
+            match Random.int_incl 0 3 with
+            | 0 -> Some(OpMul)  (* * *)
+            | 1 -> Some(OpDiv)  (* / *)
+            | 2 -> Some(OpPow)  (* ^ *)
+            | _ -> Some(OpMod)  (* % *)
+          else select_safe ()
+        end
+      | _ -> select_safe ()
     end
   | TyString   -> begin
       Some(OpConcat)
@@ -344,7 +378,7 @@ let rec combine ctx ty exprs =
       let rhs_opt = combine ctx ty head in
       match rhs_opt with
       | Some rhs -> begin
-          match gen_combine_binop ty with
+          match gen_combine_binop ty lhs rhs with
           | Some bin_op -> begin
               (* Create a binary operator. *)
               Some(BinExpr{ bin_lhs = lhs;
