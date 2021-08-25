@@ -52,3 +52,7 @@ val take_random_binding : Ast.env -> Ast.expr ref option
 (** Takes a list of expression and combines them to a single expression that
     will have requested result type. *)
 val combine_to_typed_expr : Context.t -> Ast.ty -> Ast.expr list -> Ast.expr option
+
+(** Extends the BlockStmt [block] adding the given statement to the end of the
+    block. *)
+val extend_block_stmt : Ast.stmt -> Ast.stmt -> Ast.stmt

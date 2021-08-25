@@ -3,10 +3,9 @@ open Core_kernel
 exception ConfigError of string
 
 (** Generate expressions used in ReturnStmt of the function. *)
-let gen_return_exprs return_types =
+let gen_return_exprs env return_types =
   let open Ast in
   let get_ty = function
-    (* TODO: Take variables from the local environment. *)
     | TyNil     -> GenUtil.gen_simple_typed_expr TyBoolean
     | TyBoolean -> GenUtil.gen_simple_typed_expr TyBoolean
     | TyInt     -> GenUtil.gen_simple_typed_expr TyInt
@@ -216,13 +215,12 @@ let fill_funcdef ctx fd =
   match fd with
   | FuncDefStmt fd -> begin
       let fd_body = gen_body ctx fd.fd_body in
-      (* let fd_body = match gen_return_exprs fd_ty with *)
-      (*   | _ -> fd_body                                *)
-      (* | Some return_exprs -> begin                                *)
-      (*     ReturnStmt{ return_exprs } |> extend_block_stmt fd_body *)
-      (*   end                                                       *)
-      (* in *)
-      (* () *)
+      let fd_body = match gen_return_exprs (get_block_env_exn fd.fd_body) fd.fd_ty with
+        | Some return_exprs -> begin
+            ReturnStmt{ return_exprs } |> GenUtil.extend_block_stmt fd_body
+          end
+        | None -> fd_body
+      in
       FuncDefStmt{ fd with fd_body = fd_body}
     end
   | _ -> assert false

@@ -2,15 +2,6 @@ open Core_kernel
 
 open Ast
 
-(** Extends the BlockStmt [block] adding given [stmt] to the end of the block. *)
-let extend_block_stmt block stmt =
-  match block with
-  | BlockStmt block -> begin
-      let block_stmts = block.block_stmts @ [stmt] in
-      BlockStmt { block with block_stmts }
-    end
-  | _ -> block
-
 (** Converts all statement in the [ctx] to Lua code. *)
 let ctx_to_string ctx =
   let stmts_to_s ?(cr=true) stmts =

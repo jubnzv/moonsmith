@@ -417,3 +417,13 @@ let combine_to_typed_expr ctx ty exprs =
           acc @ [type_conv ctx e_ty expr]
         end)
   |> combine ctx ty
+
+(** Extends the BlockStmt [block] adding given [stmt] to the end of the block. *)
+let extend_block_stmt block stmt =
+  match block with
+  | Ast.BlockStmt block -> begin
+      let block_stmts = block.block_stmts @ [stmt] in
+      Ast.BlockStmt { block with block_stmts }
+    end
+  | _ -> block
+
