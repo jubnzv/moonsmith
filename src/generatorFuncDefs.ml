@@ -5,13 +5,20 @@ exception ConfigError of string
 (** Generate expressions used in ReturnStmt of the function. *)
 let gen_return_exprs env return_types =
   let open Ast in
+  let aux ty =
+    match Ast.env_find_binding_with_ty env ty with
+    | Some ident -> ident
+    | None -> begin
+      GenUtil.gen_simple_typed_expr ty
+    end
+  in
   let get_ty = function
-    | TyNil     -> GenUtil.gen_simple_typed_expr TyBoolean
-    | TyBoolean -> GenUtil.gen_simple_typed_expr TyBoolean
-    | TyInt     -> GenUtil.gen_simple_typed_expr TyInt
-    | TyFloat   -> GenUtil.gen_simple_typed_expr TyFloat
-    | TyString  -> GenUtil.gen_simple_typed_expr TyString
-    | TyTable _ -> GenUtil.gen_simple_typed_expr @@ Ast.table_mk_empty ()
+    | TyNil     -> aux TyBoolean
+    | TyTable _ -> aux @@ Ast.table_mk_empty ()
+    | TyBoolean -> aux TyBoolean
+    | TyInt     -> aux TyInt
+    | TyFloat   -> aux TyFloat
+    | TyString  -> aux TyString
     | TyThread | TyUserdata | TyFunction -> NilExpr
   in
   (* Function that returns doesn't have expr types is a routine. We don't

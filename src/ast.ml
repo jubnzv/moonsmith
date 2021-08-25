@@ -214,6 +214,17 @@ let env_peek_random_exn env =
   let idx = Random.int_incl 0 @@ (List.length env.env_bindings) - 1 in
   List.nth_exn env.env_bindings idx
 
+
+let env_find_binding_with_ty env ty =
+  let filter e =
+    match !e with
+    | IdentExpr id -> if equal_ty id.id_ty ty then true else false
+    | _ -> false
+  in
+  match List.find env.env_bindings ~f:filter with
+  | Some er -> Some(!er)
+  | None -> None
+
 let env_add_binding env ident =
   env.env_bindings <- env.env_bindings @ [ref ident];
   ()
