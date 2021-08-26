@@ -203,7 +203,7 @@ let env_empty env =
   phys_equal 0 @@ List.length env.env_bindings
 
 let env_has_parent env =
-  match env.env_parent with Some _ -> true | None -> false
+  Option.is_some env.env_parent
 
 let env_get_parent_exn env =
   match env.env_parent with
@@ -211,8 +211,8 @@ let env_get_parent_exn env =
   | None -> raise @@ InternalError "Env has no parent!"
 
 let env_peek_random_exn env =
-  let idx = Random.int_incl 0 @@ (List.length env.env_bindings) - 1 in
-  List.nth_exn env.env_bindings idx
+  Random.int_incl 0 @@ (List.length env.env_bindings) - 1
+  |> List.nth_exn env.env_bindings
 
 
 let env_find_binding_with_ty env ty =

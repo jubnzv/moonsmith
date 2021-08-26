@@ -99,9 +99,7 @@ let gen_combine_stmt num_stmts =
   in
   let lhs = IdentExpr{ id_name = "RESULT";
                        id_ty = TyInt; }
-  and rhs = match combined_expr with
-    | Some rhs -> rhs
-    | None -> IntExpr(42)
+  and rhs = Option.value combined_expr ~default:(IntExpr(42))
   in
   AssignStmt{ assign_local = false;
               assign_lhs = [lhs];

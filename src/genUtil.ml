@@ -74,9 +74,8 @@ let gen_simple_typed_expr ty =
 
 let gen_ident ?(add_now=false) ?(name=None) env =
   let open Ast in
-  let name = match name with
-    | Some(n) -> n
-    | None -> Printf.sprintf "v%d" @@ Context.get_free_idx ()
+  let name =
+    Option.value name ~default:(Printf.sprintf "v%d" @@ Context.get_free_idx ())
   in
   let i = IdentExpr{ id_name = name;
                      id_ty = (gen_simple_ty ()) } in
@@ -122,10 +121,9 @@ let gen_rhs_to_assign_ident ctx env expr  =
             end
           end
         end
-      | _ (* try to peek global datum *) -> begin
-          match Context.peek_typed_datum ctx id.id_ty with
-          | None -> gen_simple_typed_expr id.id_ty
-          | Some datum_lhs_expr -> datum_lhs_expr
+      | _ (* try to peek a global datum *) -> begin
+          Context.peek_typed_datum ctx id.id_ty
+          |> Option.value ~default:(gen_simple_typed_expr id.id_ty)
         end
     end
   | _ -> assert false
@@ -410,10 +408,7 @@ let combine_to_typed_expr ctx ty exprs =
     exprs
     ~init:[]
     ~f:(fun acc expr -> begin
-          let e_ty = match get_essential_ty expr with
-            | None -> TyNil
-            | Some ty -> ty
-          in
+          let e_ty = Option.value (get_essential_ty expr) ~default:TyNil in
           acc @ [type_conv ctx e_ty expr]
         end)
   |> combine ctx ty
