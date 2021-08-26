@@ -3,14 +3,13 @@ open Core_kernel
 exception ConfigError of string
 
 (** Generate expressions used in ReturnStmt of the function. *)
-let gen_return_exprs env return_types =
+let gen_return_exprs ctx env return_types =
   let open Ast in
   let aux ty =
-    match Ast.env_find_binding_with_ty env ty with
-    | Some ident -> ident
-    | None -> begin
-      GenUtil.gen_simple_typed_expr ty
-    end
+    match env_shuffle_local_bindings env with
+    | [x] -> x
+    | l -> GenUtil.combine_to_typed_expr ctx ty l
+           |> Option.value ~default:(GenUtil.gen_simple_typed_expr ty)
   in
   let get_ty = function
     | TyNil     -> aux TyBoolean
@@ -222,7 +221,8 @@ let fill_funcdef ctx fd =
   match fd with
   | FuncDefStmt fd -> begin
       let fd_body = gen_body ctx fd.fd_body in
-      let fd_body = match gen_return_exprs (get_block_env_exn fd.fd_body) fd.fd_ty with
+      let fd_body =
+        match gen_return_exprs ctx (get_block_env_exn fd.fd_body) fd.fd_ty with
         | Some return_exprs -> begin
             ReturnStmt{ return_exprs } |> GenUtil.extend_block_stmt fd_body
           end

@@ -214,6 +214,25 @@ let env_peek_random_exn env =
   Random.int_incl 0 @@ (List.length env.env_bindings) - 1
   |> List.nth_exn env.env_bindings
 
+let env_shuffle_local_bindings env =
+  let open Util in
+  if phys_equal 0 @@ List.length env.env_bindings then []
+  else begin
+    let bindings_len = List.length env.env_bindings in
+    let get_shuffled_idxes () =
+      let nums = ( -- ) 0 @@ bindings_len in
+      let ns = List.map nums ~f:(fun num -> (Random.bits (), num)) in
+      let sorted = Caml.List.sort Caml.compare ns in
+      List.map sorted ~f:snd
+    in
+    let rec aux acc n idxes =
+      if bindings_len <= List.length acc then
+        acc
+      else
+        aux (acc @ [! (List.nth_exn env.env_bindings n)]) (n + 1) idxes
+    in
+    get_shuffled_idxes () |> aux [] 0
+  end
 
 let env_find_binding_with_ty env ty =
   let filter e =
