@@ -50,7 +50,22 @@ let gen_random_table_init () =
   | _ -> gen_array args_num
 (* TODO: | _ -> gen_hashmap args_num *)
 
-let gen_simple_typed_expr ty =
+let gen_compare_binop ty =
+  let open Ast in
+  match ty with
+  | TyInt | TyFloat -> begin
+      match Random.int_incl 0 6 with
+      | 0 -> OpEq
+      | 2 -> OpNeq
+      | 3 -> OpLt
+      | 4 -> OpLte
+      | 5 -> OpGt
+      | _ -> OpGte
+    end
+  | TyNil | TyBoolean | TyString | TyUserdata
+  | TyFunction | TyThread | TyTable _ -> if Random.bool () then OpEq else OpNeq
+
+let gen_simple_typed_expr ?(always_positive = false) ty =
   let open Ast in
   match ty with
   | TyNil     -> NilExpr
@@ -59,8 +74,12 @@ let gen_simple_typed_expr ty =
       | true -> TrueExpr
       | _ -> FalseExpr
     end
-  | TyInt     -> IntExpr(Random.int_incl (-100) 100)
-  | TyFloat   -> FloatExpr(Random.float 100.0)
+  | TyInt ->
+    if always_positive then IntExpr(Random.int_incl 0 150)
+    else IntExpr(Random.int_incl (-100) 100)
+  | TyFloat ->
+    if always_positive then FloatExpr(Random.float 150.0)
+    else FloatExpr(Random.float_range (-100.0) 100.0)
   | TyString  -> StringExpr(StringGen.gen_string ())
   | TyTable _ -> gen_random_table_init ()
   | TyFunction -> begin
@@ -421,4 +440,13 @@ let extend_block_stmt block stmt =
       Ast.BlockStmt { block with block_stmts }
     end
   | _ -> block
+
+let gen_empty_block ?(is_loop = false) parent_env =
+  let block_env = Ast.env_mk () in
+  let block_env = { block_env with env_parent = Some(ref parent_env) } in
+  let block_stmts = [] in
+  Ast.env_add_child parent_env block_env;
+  Ast.BlockStmt{ block_stmts;
+                 block_is_loop = is_loop;
+                 block_env }
 

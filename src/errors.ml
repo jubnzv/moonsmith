@@ -1,0 +1,1 @@
+exception ConfigError of string

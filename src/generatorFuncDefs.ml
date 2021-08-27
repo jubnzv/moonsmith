@@ -1,7 +1,5 @@
 open Core_kernel
 
-exception ConfigError of string
-
 (** Generate expressions used in ReturnStmt of the function. *)
 let gen_return_exprs ctx env return_types =
   let open Ast in
@@ -122,80 +120,46 @@ let gen_local_def_stmt ctx env =
                   assign_lhs;
                   assign_rhs }
 
-(** Generates a random mutation statement that never changes control flow
-    (i.e. no loops, no conditions). *)
-let gen_linear_mutation_stmt ctx env =
-  (* Peek lhs for mutation. Prefer local variables to global datums. *)
-  let peek_lhs () =
-    match Random.int_incl 0 3 with
-    (* TODO: Sometimes we could unintentionally assign a new value
-             to datum. This will override previous method definitions.
-             So this case needs some special logic. *)
-    (* | 0 -> Context.peek_random_datum_exn ctx *)
-    | _ -> !(Ast.env_peek_random_exn env)
-  in
-  (* Randomly peek some idents for the rhs.
-     Or just generate some simple expressions. *)
-  let peek_rhs_parts () =
-    let rhs_num = Random.int_incl 2 8 in
-    let peek () =
-      match Random.int_incl 0 8 with
-      (* TODO: Need figure out with types of the lhs. *)
-      (* | 0         -> Context.peek_random_datum_exn ctx *)
-      | 1 | 2 | 3 -> !(Ast.env_peek_random_exn env)
-      | _         -> GenUtil.gen_simple_expr ()
-    in
-    let rec gen acc =
-      if (List.length acc) > rhs_num then acc
-      else begin
-        gen (acc @ [peek ()])
-      end
-    in
-    gen []
-  in
-  let lhs = peek_lhs () in
-  let ty = match lhs with
-    | IdentExpr id -> id.id_ty
-    | _ -> assert false
-  in
-  let rhs_opt = peek_rhs_parts () |> GenUtil.combine_to_typed_expr ctx ty in
-  match rhs_opt with
-  | Some rhs -> begin
-      Ast.AssignStmt{ assign_local = false;
-                      assign_lhs = [lhs];
-                      assign_rhs = [rhs]; }
-    end
-  | None -> raise @@ ConfigError "Can't combine expressions using this config. Try to enable more functions."
-
-(** Generates a random statement that changes some data in the in the given
+(** Generates a random statements that changes some data in the in the given
     [env] or changes some global datum in [ctx.ctx_datum_stmts]. *)
-let gen_mutation_stmt ctx env =
-  gen_linear_mutation_stmt ctx env
+let gen_mutation_stmts ctx env =
+  match Random.int_incl 0 3 with
+  | 0 | 1 -> [GenerateLinear.generate ctx env]
+  | 2     -> [GenerateCond.generate ctx env]
+  | _     -> GenerateLoop.generate env
 
 (** Generates a block statement that will be a body of the generated
     function. *)
 let gen_body ctx block =
   let open Ast in
-  let rec gen_nested_stmts gen acc env num =
+  let rec gen_nested_stmt gen acc env num =
     if List.length acc >= num then
       acc
     else
       let stmt = gen ctx env in
       let acc = acc @ [stmt] in
+      gen_nested_stmt gen acc env num
+  in
+  let rec gen_nested_stmts gen acc env num =
+    if List.length acc >= num then
+      acc
+    else
+      let stmts = gen ctx env in
+      let acc = acc @ stmts in
       gen_nested_stmts gen acc env num
   in
   match block with
   | BlockStmt block -> begin
       let num_local_defs = Random.int_incl 2 3 in
       let local_def_stmts =
-        gen_nested_stmts gen_local_def_stmt
+        gen_nested_stmt gen_local_def_stmt
           []
           block.block_env
           num_local_defs
       in
       let num_mutations = Random.int_incl 4 6 in
       let mutation_stmts =
-        gen_nested_stmts gen_mutation_stmt
+        gen_nested_stmts gen_mutation_stmts
           []
           block.block_env
           num_mutations
@@ -203,17 +167,6 @@ let gen_body ctx block =
       BlockStmt{ block with block_stmts = local_def_stmts @ mutation_stmts }
     end
   | _ -> assert false
-
-(** Generates an empty block statement that will be a body of the generated
-    function. *)
-let gen_empty_body parent_env =
-  let block_env = Ast.env_mk () in
-  let block_env = { block_env with env_parent = Some(ref parent_env) } in
-  let block_stmts = [] in
-  Ast.env_add_child parent_env block_env;
-  Ast.BlockStmt{ block_stmts;
-                 block_is_loop = false;
-                 block_env }
 
 (** Fills body of the given function. *)
 let fill_funcdef ctx fd =
@@ -244,7 +197,7 @@ let gen_funcdef ctx =
         add_method_to_datum_table ctx fd_id datums_idx;
         (name, Some(receiver_name))
       end
-  and fd_body = gen_empty_body ctx.ctx_global_env in
+  and fd_body = GenUtil.gen_empty_block ctx.ctx_global_env in
   let fd_args = gen_args 5 (get_block_env_exn fd_body)
   and fd_ty  = gen_return_types () in
   let fd = FuncDefStmt{ fd_id;
