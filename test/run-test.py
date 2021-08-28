@@ -1,4 +1,10 @@
 #!/usr/bin/python3
+#
+# This script runs moonsmith to generate a random program, then runs a Lua
+# interpreter to execute it. If moonsmith hangs, or a Lua interpreter throws an
+# exception or can't evaluate result in 1 second, this test will be marked as
+# failed.
+#
 
 import logging
 import os
