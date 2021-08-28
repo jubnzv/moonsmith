@@ -302,7 +302,14 @@ let rec expr_to_s stmt_to_s c expr =
   | TrueExpr -> "true"
   | FalseExpr -> "false"
   | NilExpr -> "nil"
-  | StringExpr s -> Printf.sprintf "\"%s\"" s
+  | StringExpr s ->
+    if phys_equal 0 @@ Random.int_incl 0 10 then
+      (* Generate multiline string literal. *)
+      String.split ~on:' ' s
+      |> String.concat ~sep:"\n"
+      |> Printf.sprintf "[[%s]]"
+    else
+      Printf.sprintf "\"%s\"" s
   | IdentExpr id -> id.id_name
   | TableExpr t -> begin
       match t with
