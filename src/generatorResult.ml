@@ -118,16 +118,7 @@ let gen_print_stmt combine_stmt =
       end
     | _ -> assert false
   in
-  let fcf_func = IdentExpr{ id_id = -1;
-                            id_name = "print";
-                            id_ty = TyFunction }
-  in
-  let fc_ty = FCFunc{ fcf_func } in
-  let fc_expr = FuncCallExpr{ fc_id = -1;
-                              fc_ty;
-                              fc_args = [result_id] }
-  in
-  FuncCallStmt{ fc_expr }
+  FuncCallStmt{ fc_expr = StdLib.mk_funccall "print" [result_id] }
 
 let generate (ctx : Context.t) =
   let open Context in
