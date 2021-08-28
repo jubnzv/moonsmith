@@ -195,12 +195,13 @@ let gen_funcdef ctx =
       end
   and fd_body = GenUtil.gen_empty_block ctx.ctx_global_env in
   let fd_args = gen_args 5 (get_block_env_exn fd_body)
+  and fd_has_varags = if phys_equal 0 @@ Random.int_incl 0 10 then true else false
   and fd_ty  = gen_return_types () in
   let fd = FuncDefStmt{ fd_id;
                         fd_receiver;
                         fd_name;
                         fd_args;
-                        fd_has_varags = false;
+                        fd_has_varags;
                         fd_body;
                         fd_ty }
   in

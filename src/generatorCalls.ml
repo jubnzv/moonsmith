@@ -6,11 +6,28 @@ let gen_fcall_from_fdef stmt =
   let open Ast in
   match stmt with
   | FuncDefStmt fd -> begin
+      let gen_varags () =
+        let rec aux acc num =
+          if num > List.length acc then
+            let idx = Context.get_free_idx ()
+            and id_ty = Util.choose_one_exn [TyInt; TyFloat; TyBoolean; TyString]
+            in
+            let varg = IdentExpr{ id_id = idx;
+                                  id_name = Printf.sprintf "vararg%d" idx;
+                                  id_ty }
+            in
+            aux (acc @ [varg]) num
+          else acc
+        in
+        aux [] (Random.int_incl 0 3)
+      in
       (* Generate arguments for function call with their initialization
          statements. *)
       let (fc_args, fcf_init_stmts) =
+        (* If function supports varargs, add some. *)
+        let varags = if fd.fd_has_varags then gen_varags () else [] in
         List.fold_left
-          fd.fd_args
+          (fd.fd_args @ varags)
           ~init:[]
           ~f:(fun acc expr -> begin
                 match expr with

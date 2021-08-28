@@ -428,6 +428,9 @@ let rec stmt_to_s ?(cr = false) ?(depth = 0) c stmt =
               end)
         |> String.concat ~sep:"\n"
       and args_code = exprs_to_cs stmt_to_s c fd.fd_args
+      and varargs_s = if fd.fd_has_varags then
+          Printf.sprintf "%s..." (if List.is_empty fd.fd_args then "" else ", ")
+        else ""
       and body_code = List.fold_left
           (to_block_stmts_exn fd.fd_body)
           ~init:[]
@@ -438,11 +441,12 @@ let rec stmt_to_s ?(cr = false) ?(depth = 0) c stmt =
         | Some r -> Printf.sprintf "%s:%s" r fd.fd_name
         | None -> fd.fd_name
       in
-      Printf.sprintf "%s\n%sfunction %s(%s)\n%s\n%send%s"
+      Printf.sprintf "%s\n%sfunction %s(%s%s)\n%s\n%send%s"
         docstring
         (mk_i ())
         name
         args_code
+        varargs_s
         body_code
         (mk_i ())
         cr_s
