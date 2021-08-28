@@ -4,18 +4,30 @@
     NOTE: userdata and thread types are unsupported. *)
 val gen_ty : unit -> Ast.ty
 
-(** Randomly generates on of the following Lua types: Number (integer or
-    float), Boolean or String. *)
+(** Randomly generates on of the following types:
+    + Boolean
+    + Int
+    + Float
+    + String *)
 val gen_simple_ty : unit -> Ast.ty
 
 (** Generates a simple random expression: boolean, number, nil, string.  *)
 val gen_simple_expr : unit -> Ast.expr
 
-(** Generates an expression with the given type [ty]. *)
-val gen_simple_typed_expr : ?always_positive:(bool) -> Ast.ty -> Ast.expr
-
-(** Generates a random init for an array table expression. *)
+(** Generates a random init for an array table expression.
+    See: https://www.lua.org/pil/11.1.html *)
 val gen_array_table_init : unit -> Ast.expr
+
+(** Generates a random init for an hash table expression. *)
+val gen_hash_table_init : ?ty:Ast.ty -> unit -> Ast.expr
+
+(** Generates a simple random expression of the given type.
+    If type is not specified, chooses randomly between:
+      + Boolean
+      + Int
+      + Float
+      + String *)
+val gen_simple_expr : ?ty:Ast.ty -> ?always_positive:bool -> unit -> Ast.expr
 
 (** Generates comparison operator that could be applied to two expressions with
     the given type. *)

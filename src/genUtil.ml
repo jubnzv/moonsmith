@@ -15,46 +15,43 @@ let gen_simple_ty () =
   let open Ast in
   Util.choose_one_exn [TyBoolean; TyInt; TyFloat; TyString]
 
-let gen_simple_expr () =
-  let open Ast in
-  match Random.int_incl 0 5 with
-  | 0 -> TrueExpr
-  | 1 -> FalseExpr
-  | 2 -> NilExpr
-  | 3 -> IntExpr(Random.int_incl (-100) 100)
-  | 4 -> FloatExpr(Random.float 100.00)
-  | _ -> StringExpr(StringGen.gen_string ())
-
 let gen_array_table_init () =
   let open Ast in
   let gen_array args_num =
     let gen acc =
-      if args_num <= List.length acc then [gen_simple_expr ()] |> List.append acc
+      if args_num <= List.length acc then
+        [IntExpr(Random.int_incl (-20) 20)]
+        |> List.append acc
       else acc
     in
     let table_elements = gen [] in
-    TableExpr(TArray{table_elements})
+    TableExpr(TArray{ table_elements })
   in
-  Random.int_incl 0 5 |> gen_array
+  Random.int_incl 1 5 |> gen_array
 
-let gen_compare_binop ty =
+let gen_simple_expr always_positive =
+  let open Ast in
+  match Random.int_incl 0 4 with
+  | 0 -> TrueExpr
+  | 1 -> FalseExpr
+  | 2 ->
+    let (l, r) =
+      if always_positive then (0, 200)
+      else (-100, 100)
+    in
+    IntExpr(Random.int_incl l r)
+  | 3 ->
+    let (l, r) =
+      if always_positive then (-100.0), 100.0
+      else 0.0, 200.0
+    in
+    FloatExpr(Random.float_range l r)
+  | _ -> StringExpr(StringGen.gen_string ())
+
+let gen_simple_expr ?(ty = Ast.TyAny) ?(always_positive = false) () =
   let open Ast in
   match ty with
-  | TyInt | TyFloat -> begin
-      match Random.int_incl 0 6 with
-      | 0 -> OpEq
-      | 2 -> OpNeq
-      | 3 -> OpLt
-      | 4 -> OpLte
-      | 5 -> OpGt
-      | _ -> OpGte
-    end
-  | TyNil | TyBoolean | TyString | TyUserdata
-  | TyFunction | TyThread | TyTable | TyAny -> if Random.bool () then OpEq else OpNeq
-
-let gen_simple_typed_expr ?(always_positive = false) ty =
-  let open Ast in
-  match ty with
+  | TyAny -> gen_simple_expr always_positive
   | TyNil     -> NilExpr
   | TyBoolean -> begin
       match Random.bool () with
@@ -76,7 +73,40 @@ let gen_simple_typed_expr ?(always_positive = false) ty =
       LambdaExpr{ lambda_args = [];
                   lambda_body }
     end
-  | TyThread | TyUserdata | TyAny -> NilExpr
+  | TyThread | TyUserdata -> NilExpr
+
+let gen_hash_table_init ?(ty = Ast.TyAny) () =
+  let open Ast in
+  let gen_hashmap args_num =
+    let gen acc =
+      if args_num <= List.length acc then
+        let idx = Context.get_free_idx () in
+        let tf_key = IdentExpr{ id_id = idx;
+                                id_name = Printf.sprintf "tf%d" idx;
+                                id_ty = ty }
+        and tf_value = gen_simple_expr ~ty:ty () in
+        acc @ [{ tf_key; tf_value }]
+      else acc
+    in
+    let table_fields = gen [] in
+    TableExpr(THashMap{ table_fields })
+  in
+  Random.int_incl 1 5 |> gen_hashmap
+
+let gen_compare_binop ty =
+  let open Ast in
+  match ty with
+  | TyInt | TyFloat -> begin
+      match Random.int_incl 0 6 with
+      | 0 -> OpEq
+      | 2 -> OpNeq
+      | 3 -> OpLt
+      | 4 -> OpLte
+      | 5 -> OpGt
+      | _ -> OpGte
+    end
+  | TyNil | TyBoolean | TyString | TyUserdata
+  | TyFunction | TyThread | TyTable | TyAny -> if Random.bool () then OpEq else OpNeq
 
 let gen_ident ?(add_now=false) ?(name=None) env =
   let open Ast in
@@ -102,12 +132,12 @@ let gen_rhs_to_assign_ident ctx env expr  =
   match expr with
   | IdentExpr id -> begin
       match Random.int_incl 0 2 with
-      | 0 (* generate simple expr *) -> begin
-          gen_simple_typed_expr id.id_ty
+      | 0 (* generate a simple expr *) -> begin
+          gen_simple_expr ~ty:(id.id_ty) ()
         end
-      | 1 (* try to peek local expr *) -> begin
+      | 1 (* try to peek a local expr *) -> begin
           if env_empty env then
-            gen_simple_typed_expr id.id_ty
+            gen_simple_expr ~ty:(id.id_ty) ()
           else begin
             let binds_with_same_type = List.filter
                 env.env_bindings
@@ -121,7 +151,7 @@ let gen_rhs_to_assign_ident ctx env expr  =
                     end)
             in
             if phys_equal 0 @@ List.length binds_with_same_type then
-              gen_simple_typed_expr id.id_ty
+              gen_simple_expr ~ty:(id.id_ty) ()
             else begin
               ! (Util.choose_one_exn binds_with_same_type)
             end
@@ -129,7 +159,7 @@ let gen_rhs_to_assign_ident ctx env expr  =
         end
       | _ (* try to peek a global datum *) -> begin
           Context.peek_typed_datum ctx id.id_ty
-          |> Option.value ~default:(gen_simple_typed_expr id.id_ty)
+          |> Option.value ~default:(gen_simple_expr ~ty:(id.id_ty) ())
         end
     end
   | _ -> assert false
@@ -441,4 +471,3 @@ let gen_empty_block ?(is_loop = false) parent_env =
   Ast.BlockStmt{ block_stmts;
                  block_is_loop = is_loop;
                  block_env }
-

@@ -11,7 +11,7 @@ let generate ctx env =
     let cond_rhs, cond_op =
       match get_essential_ty cond_lhs with
       | Some ty ->
-        (GenUtil.gen_simple_typed_expr ty, GenUtil.gen_compare_binop ty)
+        (GenUtil.gen_simple_expr ~ty:ty (), GenUtil.gen_compare_binop ty)
       | None ->
         (NilExpr, OpEq)
     in

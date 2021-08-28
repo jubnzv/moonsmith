@@ -70,7 +70,8 @@ and table_ty =
   | TArray of { table_elements: expr list }
   | THashMap of { table_fields: table_field list }
 and table_field =
-  { tf_key: expr; tf_value: expr }
+  { tf_key: expr;
+    tf_value: expr }
 and func_call =
   | FCMethod of { fcm_receiver: string;
                   fcm_method: string; }

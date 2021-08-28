@@ -7,7 +7,7 @@ let gen_return_exprs ctx env return_types =
     match env_shuffle_local_bindings env with
     | [x] -> x
     | l -> GenUtil.combine_to_typed_expr ctx ty l
-           |> Option.value ~default:(GenUtil.gen_simple_typed_expr ty)
+           |> Option.value ~default:(GenUtil.gen_simple_expr ~ty:ty ())
   in
   let get_ty = function
     | TyNil     -> aux TyBoolean
