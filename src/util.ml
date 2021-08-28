@@ -8,10 +8,8 @@ let choose kv fallback =
       kv
       ~init:[]
       ~f:(fun acc (k, v) -> if k then acc @ [v] else acc)
-  in if phys_equal 0 @@ List.length l then
-    Lazy.force fallback
-  else
-    Lazy.force (choose_one_exn l)
+  in if List.is_empty l then Lazy.force fallback
+  else Lazy.force (choose_one_exn l)
 
 let choose_lazy_exn vs =
   let l = List.fold_left

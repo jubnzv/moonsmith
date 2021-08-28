@@ -95,7 +95,7 @@ let peek_typed_datum ctx ty =
   let datums_with_same_ty =
     List.filter ctx.ctx_datum_stmts ~f:filter
   in
-  if phys_equal 0 @@ List.length datums_with_same_ty then None
+  if List.is_empty datums_with_same_ty then None
   else begin
     match Util.choose_one_exn datums_with_same_ty with
     | AssignStmt assign -> List.nth assign.assign_lhs 0

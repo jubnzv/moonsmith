@@ -197,7 +197,7 @@ let env_mk () =
     env_children = [] }
 
 let env_empty env =
-  phys_equal 0 @@ List.length env.env_bindings
+  List.is_empty env.env_bindings
 
 let env_has_parent env =
   Option.is_some env.env_parent
@@ -214,7 +214,7 @@ let env_peek_random_exn env =
 
 let env_shuffle_local_bindings env =
   let open Util in
-  if phys_equal 0 @@ List.length env.env_bindings then []
+  if env_empty env then []
   else begin
     let bindings_len = List.length env.env_bindings in
     let get_shuffled_idxes () =

@@ -150,7 +150,7 @@ let gen_rhs_to_assign_ident ctx env expr  =
                       | _ -> false (* who knows, let's just skip *)
                     end)
             in
-            if phys_equal 0 @@ List.length binds_with_same_type then
+            if List.is_empty binds_with_same_type then
               gen_simple_expr ~ty:(id.id_ty) ()
             else begin
               ! (Util.choose_one_exn binds_with_same_type)

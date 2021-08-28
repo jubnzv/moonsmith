@@ -20,12 +20,10 @@ let gen_return_exprs ctx env return_types =
   in
   (* Function that returns doesn't have expr types is a routine. We don't
      need a return statement at all then. *)
-  if phys_equal 0 @@ List.length return_types then
-    None
-  else
-    Some(List.fold_left return_types
-           ~init:[]
-           ~f:(fun acc e -> acc @ [get_ty e]))
+  if List.is_empty return_types then None
+  else Some(List.fold_left return_types
+              ~init:[]
+              ~f:(fun acc e -> acc @ [get_ty e]))
 
 (** Randomly peeks a table name and index in [ctx_datum_stmts].
     It will become a receiver (object) for a new method.
@@ -36,7 +34,7 @@ let peek_receiver ctx =
     | false -> None
     | true -> begin
         let tables_idxes = Context.get_datum_tables_i ctx in
-        if phys_equal 0 @@ List.length tables_idxes then None
+        if List.is_empty tables_idxes then None
         else begin
           let (idx, table) = Util.choose_one_exn tables_idxes in
           match table with
