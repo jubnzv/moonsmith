@@ -336,8 +336,19 @@ let rec expr_to_s stmt_to_s c expr =
       in
       Printf.sprintf "function (%s) %s end" args_s body_s
     end
-  | IntExpr n -> Printf.sprintf "%d" n
-  | FloatExpr n -> Printf.sprintf "%f" n
+  | IntExpr n ->
+    Util.choose [ (phys_equal 0 @@ Random.int_incl 0 10),
+                  lazy (Printf.sprintf "0x%x" n);
+                  (phys_equal 0 @@ Random.int_incl 0 10),
+                  lazy (Printf.sprintf "0x%X" n) ]
+    @@ lazy (Printf.sprintf "%d" n)
+  | FloatExpr n ->
+    Util.choose [ (phys_equal 0 @@ Random.int_incl 0 10),
+                  lazy (Printf.sprintf "%e" n);
+                  (c.Config.c_use_hex_floats &&
+                   phys_equal 0 @@ Random.int_incl 0 10),
+                  lazy (Printf.sprintf "%h" n) ]
+    @@ lazy (Printf.sprintf "%f" n)
   | UnExpr e -> begin
       let (sl, sr) = match e.un_op with
         | OpSub | OpLen -> "(", ")"

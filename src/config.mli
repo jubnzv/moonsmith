@@ -15,6 +15,8 @@ type t = {
   c_seed: int option;
   (** If true, generate some random OOP methods for the datum tables. *)
   c_gen_oop_methods: bool;
+  (** Use hexademical floats introduced in Lua 5.3. *)
+  c_use_hex_floats: bool;
   (* *** Language features *** *)
   (** Use length ('#') operators on strings and tables. *)
   c_use_length: bool;

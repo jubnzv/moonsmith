@@ -13,6 +13,14 @@ let choose kv fallback =
   else
     Lazy.force (choose_one_exn l)
 
+let choose_lazy_exn vs =
+  let l = List.fold_left
+      vs
+      ~init:[]
+      ~f:(fun acc v -> acc @ [v])
+  in
+  Lazy.force (choose_one_exn l)
+
 let replace l idx v =
   List.mapi l
     ~f:(fun i x -> if i = idx then v else x)
