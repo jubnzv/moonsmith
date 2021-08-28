@@ -2,4 +2,4 @@
     or global data in the function. The resulted statements also may include
     definition of some control variables, defined out of the loop. The
     generated loop always terminates. *)
-val generate : Ast.env -> Ast.stmt list
+val generate : Context.t -> Ast.env -> Ast.stmt list

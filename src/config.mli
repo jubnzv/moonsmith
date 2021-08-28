@@ -18,6 +18,10 @@ type t = {
   (* *** Language features *** *)
   (** Use length ('#') operators on strings and tables. *)
   c_use_length: bool;
+  (** Use 'pairs' function. *)
+  c_use_pairs: bool;
+  (** Use 'ipairs' function. *)
+  c_use_ipairs: bool;
   (** Use tostring(). *)
   c_use_tostring: bool;
   (** Use string.upper(). *)

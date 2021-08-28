@@ -14,9 +14,8 @@ val gen_simple_expr : unit -> Ast.expr
 (** Generates an expression with the given type [ty]. *)
 val gen_simple_typed_expr : ?always_positive:(bool) -> Ast.ty -> Ast.expr
 
-(** Generates a random init for a table expression.
-    It can be both: an array or a hash map. *)
-val gen_random_table_init : unit -> Ast.expr
+(** Generates a random init for an array table expression. *)
+val gen_array_table_init : unit -> Ast.expr
 
 (** Generates comparison operator that could be applied to two expressions with
     the given type. *)
@@ -57,9 +56,9 @@ val take_random_binding : Ast.env -> Ast.expr ref option
     will have requested result type. *)
 val combine_to_typed_expr : Context.t -> Ast.ty -> Ast.expr list -> Ast.expr option
 
-(** Extends the BlockStmt [block] adding the given statement to the end of the
+(** Extends the BlockStmt [block] adding the given [stmts] to the end of the
     block. *)
-val extend_block_stmt : Ast.stmt -> Ast.stmt -> Ast.stmt
+val extend_block_stmt : Ast.stmt -> Ast.stmt list -> Ast.stmt
 
 (** Generates an empty block statement. *)
 val gen_empty_block : ?is_loop:bool -> Ast.env -> Ast.stmt

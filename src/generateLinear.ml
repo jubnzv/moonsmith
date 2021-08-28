@@ -42,4 +42,10 @@ let generate ctx env =
                       assign_rhs = [rhs]; }
     end
   | None ->
-      Errors.ConfigError "Can't combine expressions using this config. Try to enable more functions." |> raise
+    Errors.ConfigError "Can't combine expressions using this config. Try to enable more functions." |> raise
+
+let generate_stmts ctx env num =
+  let rec aux acc =
+    if num <= List.length acc then acc
+    else aux (acc @ [generate ctx env])
+  in aux []

@@ -123,10 +123,11 @@ let gen_local_def_stmt ctx env =
 (** Generates a random statements that changes some data in the in the given
     [env] or changes some global datum in [ctx.ctx_datum_stmts]. *)
 let gen_mutation_stmts ctx env =
-  match Random.int_incl 0 3 with
+  match Random.int_incl 0 4 with
   | 0 | 1 -> [GenerateLinear.generate ctx env]
   | 2     -> [GenerateCond.generate ctx env]
-  | _     -> GenerateLoop.generate env
+  | 3     -> GenerateLoop.generate ctx env
+  | _     -> [GenerateFor.generate ctx env]
 
 (** Generates a block statement that will be a body of the generated
     function. *)
@@ -177,7 +178,7 @@ let fill_funcdef ctx fd =
       let fd_body =
         match gen_return_exprs ctx (get_block_env_exn fd.fd_body) fd.fd_ty with
         | Some return_exprs -> begin
-            ReturnStmt{ return_exprs } |> GenUtil.extend_block_stmt fd_body
+            [ReturnStmt{ return_exprs }] |> GenUtil.extend_block_stmt fd_body
           end
         | None -> fd_body
       in

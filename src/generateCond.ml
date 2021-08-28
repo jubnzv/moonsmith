@@ -20,18 +20,13 @@ let generate ctx env =
              bin_rhs = cond_rhs }
   in
   let gen_body () =
-    let rec aux acc max block_env =
-      if max > List.length acc then
-        aux (acc @ [GenerateLinear.generate ctx block_env]) max block_env
-      else
-        acc
-    in
     let block = GenUtil.gen_empty_block env in
     match block with
     | BlockStmt block ->
       (* NOTE: We are working in the parent environment. No new variables
-         inside if blocks. *)
-      let body = aux [] (Random.int_incl 1 3) env
+         inside "if" blocks. *)
+      let body =
+        (Random.int_incl 1 3) |> GenerateLinear.generate_stmts ctx env
       in BlockStmt{ block with block_stmts = body }
     | _ -> assert false
   in

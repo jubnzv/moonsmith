@@ -1,7 +1,5 @@
 open Core_kernel
 
-exception InternalError of string
-
 (** Essential types present in Lua. *)
 type ty =
   | TyNil
@@ -14,6 +12,7 @@ type ty =
   | TyThread
   | TyTable of { tyt_id: int;
                  tyt_method_ids: int list; }
+  | TyAny
 [@@deriving equal]
 
 (** See: https://www.lua.org/manual/5.3/manual.html#3.4.1 *)
@@ -132,6 +131,7 @@ let ty_to_s = function
   | TyFunction  -> "function"
   | TyThread    -> "thread"
   | TyTable _   -> "table"
+  | TyAny       -> "any"
 
 let table_mk_empty () =
   TyTable{ tyt_id = -1;
@@ -166,7 +166,7 @@ let types_are_comparable ty_lhs ty_rhs =
 
 let get_block_env_exn = function
   | BlockStmt s -> s.block_env
-  | _ -> raise @@ InternalError "Expected BlockStmt"
+  | _ -> Errors.InternalError "Expected BlockStmt" |> raise
 
 let op_to_s = function
   | OpAdd     ->  "+"
@@ -208,8 +208,9 @@ let env_has_parent env =
 let env_get_parent_exn env =
   match env.env_parent with
   | Some parent -> !parent
-  | None -> raise @@ InternalError "Env has no parent!"
+  | None -> Errors.InternalError "Env has no parent!" |> raise
 
+(* TODO: Add nested level *)
 let env_peek_random_exn env =
   Random.int_incl 0 @@ (List.length env.env_bindings) - 1
   |> List.nth_exn env.env_bindings
@@ -374,7 +375,7 @@ and exprs_to_cs stmt_to_s c exprs =
 
 let to_block_stmts_exn = function
   | BlockStmt bs -> bs.block_stmts
-  | _ -> raise @@ InternalError "Expected BlockStmt"
+  | _ -> Errors.InternalError "Expected BlockStmt" |> raise
 
 let rec stmt_to_s ?(cr = false) ?(depth = 0) c stmt =
   let mk_i () = mk_indent c.Config.c_indent depth in
@@ -484,4 +485,27 @@ let rec stmt_to_s ?(cr = false) ?(depth = 0) c stmt =
       let exprs_s = exprs_to_cs stmt_to_s c s.return_exprs in
       Printf.sprintf "%sreturn %s" (mk_i ()) exprs_s
     end
-  | NumForStmt _ | ForStmt _ -> assert false
+  | NumForStmt s -> begin
+      let for_init = match s.nfor_step with
+        | IntExpr 1 ->
+          Printf.sprintf "%s=%s,%s"
+            (s.nfor_name)
+            (expr_to_s stmt_to_s c s.nfor_init)
+            (expr_to_s stmt_to_s c s.nfor_limit)
+        | _ ->
+          Printf.sprintf "%s=%s,%s,%s"
+            (s.nfor_name)
+            (expr_to_s stmt_to_s c s.nfor_init)
+            (expr_to_s stmt_to_s c s.nfor_limit)
+            (expr_to_s stmt_to_s c s.nfor_step)
+      in
+      let for_body = stmt_to_s c s.nfor_body ~depth:(depth + 1) in
+      Printf.sprintf "%sfor %s do\n%s\n%send" (mk_i ()) for_init for_body (mk_i ())
+    end
+  | ForStmt s -> begin
+      let for_names = exprs_to_cs stmt_to_s c s.for_names
+      and for_exprs = exprs_to_cs stmt_to_s c s.for_exprs
+      and for_body = stmt_to_s c s.for_body ~depth:(depth + 1) in
+      Printf.sprintf "%sfor %s in %s do\n%s\n%send"
+        (mk_i ()) for_names for_exprs for_body (mk_i ())
+    end

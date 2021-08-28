@@ -18,6 +18,10 @@ type t = {
   (* *** Language features *** *)
   (** Use length ('#') operators on strings and tables. *)
   c_use_length: bool;
+  (** Use 'pairs' function. *)
+  c_use_pairs: bool;
+  (** Use 'ipairs' function. *)
+  c_use_ipairs: bool;
   (** Use tostring(). *)
   c_use_tostring: bool;
   (** Use string.upper(). *)
@@ -42,6 +46,8 @@ let mk_default () =
     c_seed = None;
     c_gen_oop_methods = true;
     c_use_length = true;
+    c_use_pairs = true;
+    c_use_ipairs = true;
     c_use_tostring = true;
     c_use_string_upper = true;
     c_use_string_lower = true;

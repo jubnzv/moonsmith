@@ -10,6 +10,7 @@ type ty =
   | TyThread
   | TyTable of { tyt_id: int;
                  tyt_method_ids: int list; }
+  | TyAny
 [@@deriving equal]
 
 (** See: https://www.lua.org/manual/5.3/manual.html#3.4.1 *)

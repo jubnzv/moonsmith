@@ -25,30 +25,17 @@ let gen_simple_expr () =
   | 4 -> FloatExpr(Random.float 100.00)
   | _ -> StringExpr(StringGen.gen_string ())
 
-let gen_random_table_init () =
+let gen_array_table_init () =
   let open Ast in
   let gen_array args_num =
     let gen acc =
-      if args_num <= List.length acc then
-        [gen_simple_expr ()] |> List.append acc
-      else
-        acc
+      if args_num <= List.length acc then [gen_simple_expr ()] |> List.append acc
+      else acc
     in
     let table_elements = gen [] in
     TableExpr(TArray{table_elements})
-    (* and gen_hashmap args_num =              *)
-    (*   let rec gen acc =                     *)
-    (*     if args_num <= List.length acc then *)
-    (*     else                                *)
-    (*       acc                               *)
-    (*     in                                  *)
-    (*     acc @ []                            *)
-    (*       gen []                            *)
   in
-  let args_num = Random.int_incl 0 5 in
-  match Random.bool () with
-  | _ -> gen_array args_num
-(* TODO: | _ -> gen_hashmap args_num *)
+  Random.int_incl 0 5 |> gen_array
 
 let gen_compare_binop ty =
   let open Ast in
@@ -63,7 +50,7 @@ let gen_compare_binop ty =
       | _ -> OpGte
     end
   | TyNil | TyBoolean | TyString | TyUserdata
-  | TyFunction | TyThread | TyTable _ -> if Random.bool () then OpEq else OpNeq
+  | TyFunction | TyThread | TyTable _ | TyAny -> if Random.bool () then OpEq else OpNeq
 
 let gen_simple_typed_expr ?(always_positive = false) ty =
   let open Ast in
@@ -81,7 +68,7 @@ let gen_simple_typed_expr ?(always_positive = false) ty =
     if always_positive then FloatExpr(Random.float 150.0)
     else FloatExpr(Random.float_range (-100.0) 100.0)
   | TyString  -> StringExpr(StringGen.gen_string ())
-  | TyTable _ -> gen_random_table_init ()
+  | TyTable _ -> gen_array_table_init ()
   | TyFunction -> begin
       let lambda_body =
         ReturnStmt{ return_exprs = [IntExpr(Random.int_incl (-100) (100))] }
@@ -89,7 +76,7 @@ let gen_simple_typed_expr ?(always_positive = false) ty =
       LambdaExpr{ lambda_args = [];
                   lambda_body }
     end
-  | TyThread | TyUserdata -> NilExpr
+  | TyThread | TyUserdata | TyAny -> NilExpr
 
 let gen_ident ?(add_now=false) ?(name=None) env =
   let open Ast in
@@ -175,7 +162,8 @@ let gen_init_stmt_for_ident ?(assign_local = false) expr =
                       lambda_body }
           |> gen_init_stmt
         end
-      | TyTable _ -> gen_random_table_init () |> gen_init_stmt
+      | TyTable _ -> gen_array_table_init () |> gen_init_stmt
+      | TyAny     -> gen_init_stmt NilExpr
       | TyUserdata | TyThread -> assert false
     end
   | _ -> assert false
@@ -254,6 +242,7 @@ let gen_combine_unop ty =
   | TyString   -> None
   | TyFunction -> None
   | TyTable _  -> None
+  | TyAny      -> None
   | TyThread | TyUserdata -> None
 
 (** Generates name of the function which takes a single argument of type [ty]
@@ -286,6 +275,7 @@ let gen_combine_un_funcall ctx ty =
     end
   | TyFunction -> None
   | TyTable _  -> None
+  | TyAny      -> None
   | TyThread | TyUserdata -> None
 
 (** Generates binary operator which can take two expressions of type [ty] and
@@ -358,6 +348,7 @@ let gen_combine_binop ty lhs rhs =
     end
   | TyFunction -> None
   | TyTable _  -> None
+  | TyAny      -> None
   | TyThread | TyUserdata -> None
 
 (** Combines [exprs] of the same type [ty] to a single expression. *)
@@ -421,7 +412,7 @@ let combine_to_typed_expr ctx ty exprs =
     | TyString   -> Transform.to_string
     | TyFunction -> Transform.to_function
     | TyTable _  -> Transform.to_table
-    | TyThread | TyUserdata -> Transform.to_nil
+    | TyThread | TyUserdata | TyAny -> Transform.to_nil
   in
   List.fold_left
     exprs
@@ -433,10 +424,10 @@ let combine_to_typed_expr ctx ty exprs =
   |> combine ctx ty
 
 (** Extends the BlockStmt [block] adding given [stmt] to the end of the block. *)
-let extend_block_stmt block stmt =
+let extend_block_stmt block stmts =
   match block with
   | Ast.BlockStmt block -> begin
-      let block_stmts = block.block_stmts @ [stmt] in
+      let block_stmts = block.block_stmts @ stmts in
       Ast.BlockStmt { block with block_stmts }
     end
   | _ -> block

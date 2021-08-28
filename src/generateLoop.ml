@@ -75,21 +75,23 @@ let gen_term_stmt cond_var_ident cond_term =
                  assign_lhs = [cond_var_ident];
                  assign_rhs = [rhs] }
 
-let gen_loop_block env cond_var_ident cond_term =
+let gen_loop_block ctx env cond_var_ident cond_term =
   let block = GenUtil.gen_empty_block env in
   let term_stmt = gen_term_stmt cond_var_ident cond_term in
   match block with
   | Ast.BlockStmt block ->
-    let stmts = block.block_stmts @ [term_stmt] in
-    Ast.BlockStmt{ block with block_stmts = stmts }
+    let body = (Random.int_incl 1 3) |> GenerateLinear.generate_stmts ctx env in
+    let body = block.block_stmts @ body @ [term_stmt] in
+    Ast.BlockStmt{ block with block_stmts = body }
   | _ -> assert false
 
-let generate env =
+let generate ctx env =
   let ast_loop_ty = if Random.bool () then Ast.Repeat else Ast.While in
   let (cond_var_ident, cond_var_def, cond_term) = gen_cond_var () in
   let loop_cond = gen_loop_cond cond_var_ident cond_term in
+  let loop_block = gen_loop_block ctx env cond_var_ident cond_term in
   let loop = Ast.LoopStmt{ loop_cond;
-                           loop_block = gen_loop_block env cond_var_ident cond_term;
+                           loop_block;
                            loop_ty = ast_loop_ty }
   in
   [cond_var_def; loop]
