@@ -10,15 +10,7 @@ let float_to_int ctx expr =
   in
   let open Ast in
   if ctx.Context.ctx_config.Config.c_use_math_floor then begin
-    (* Just use 'math.floor()'. *)
-    let fcf_func = IdentExpr{ id_id = -1;
-                              id_name = "math.floor";
-                              id_ty = TyFunction }
-    in
-    let fc_ty = FCFunc{ fcf_func } in
-    FuncCallExpr{ fc_id = -1;
-                  fc_ty;
-                  fc_args = [expr] }
+    StdLib.mk_funccall "math.floor" [expr]
   end
   else if can_convert_with_floor () then begin
     (* Floor with '// 1' and convert to string using 'tostring()'.
@@ -27,29 +19,13 @@ let float_to_int ctx expr =
                            bin_op = OpFloor;
                            bin_rhs = IntExpr(1) }
     in
-    let tostring = FuncCallExpr{
-        fc_id = -1;
-        fc_ty = FCFunc{
-            fcf_func =
-              IdentExpr{ id_id = -1;
-                         id_name = "tostring";
-                         id_ty = TyFunction } };
-        fc_args = [floored] }
-    in
+    let tostring = StdLib.mk_funccall "tostring" [floored] in
     let len_expr = BinExpr{ bin_lhs = UnExpr{ un_op = OpLen;
                                               un_expr = tostring };
                             bin_op = OpSub;
                             bin_rhs = IntExpr(2) }
     in
-    FuncCallExpr{
-      fc_id = -1;
-      fc_ty =
-        FCFunc{
-          fcf_func =
-            IdentExpr{ id_id = -1;
-                       id_name = "string.sub";
-                       id_ty = TyFunction }};
-      fc_args = [tostring; IntExpr(1); len_expr] }
+    StdLib.mk_funccall "string.sub" [tostring; IntExpr(1); len_expr]
   end
   else (* Well, we can't convert it in such restricted case. *)
     IntExpr(Random.int_incl 1 10)
@@ -58,12 +34,14 @@ let float_to_int ctx expr =
     string to integer. *)
 let string_to_int ctx expr =
   let open Ast in
-  if ctx.Context.ctx_config.Config.c_use_length then
-    (* Just take a length of the string. *)
-    UnExpr{ un_op = OpLen;
-            un_expr = expr }
-  else (* Well, we can't convert it in such restricted case. *)
-    IntExpr(Random.int_incl 1 10)
+  let open Context in
+  let open Config in
+  let fallback () = IntExpr(Random.int_incl 1 10) in
+  Util.choose [(ctx.ctx_config.c_use_length,
+                lazy (UnExpr{ un_op = OpLen; un_expr = expr }));
+               (ctx.ctx_config.c_use_string_len,
+                lazy (StdLib.mk_funccall "string.len" [expr]))]
+  @@ lazy (fallback ())
 
 (** Generates expression that converts the given [IdentExpr] from
     table to integer. *)
@@ -83,17 +61,20 @@ let to_nil ctx ty expr =
 
 let to_boolean ctx ty expr =
   let open Ast in
+  let fallback () = if Random.bool () then TrueExpr else FalseExpr in
   match ty with
   | TyNil -> begin
       (* 'not nil' always returns true. *)
-      UnExpr { un_op = OpNot;
-               un_expr = expr }
+      UnExpr{ un_op = OpNot;
+              un_expr = expr }
     end
-  (* TODO: This is not finished. *)
-  | _ -> begin
-      if Random.bool () then TrueExpr
-      else                   FalseExpr
+  | TyInt -> begin
+      if ctx.Context.ctx_config.Config.c_use_math_ult then
+        StdLib.mk_funccall "math.ult" [expr; IntExpr(Random.int_incl (-20) 20)]
+      else
+        fallback ()
     end
+  | _ -> fallback ()
 
 let to_int ctx ty expr =
   let open Ast in
@@ -109,29 +90,70 @@ let to_int ctx ty expr =
 
 let to_float ctx ty expr =
   let open Ast in
-  (* TODO: This is not finished. *)
-  FloatExpr(Random.float 100.0)
+  let open Context in
+  let open Config in
+  let fallback () =
+    if ctx.ctx_config.c_use_math_pi && Random.bool () then
+      StdLib.mk_ident ~ty:TyFloat "math.pi"
+    else
+      FloatExpr(Random.float 100.0)
+  in
+  match ty with
+  | TyInt | TyFloat -> begin
+      Util.choose [(ctx.ctx_config.c_use_math_sin,
+                    lazy (StdLib.mk_funccall "math.sin" [expr]));
+                   (ctx.ctx_config.c_use_math_cos,
+                    lazy (StdLib.mk_funccall "math.cos" [expr]))
+                  ]
+      @@ lazy (fallback ())
+    end
+  | _ -> fallback ()
 
 let to_string ctx ty expr =
   let open Ast in
-  (* TODO: This is not finished. *)
-  StringExpr(StringGen.gen_string ())
+  let open Config in
+  let open Context in
+  let fallback () = StringExpr(StringGen.gen_string ()) in
+  match ty with
+  | TyInt -> begin
+      if ctx.ctx_config.c_use_math_type then
+        StdLib.mk_funccall "math.type" [expr]
+      else
+        fallback ()
+    end
+  | TyFloat -> begin
+      if ctx.ctx_config.c_use_math_type then
+        StdLib.mk_funccall "math.type" [expr]
+      else
+      if Random.bool () then fallback () else expr
+    end
+  | TyString -> begin
+      (* string.reverse is horrible slow. Reduce it calls as much as possible. *)
+      Util.choose [(ctx.ctx_config.c_use_string_reverse && phys_equal 0 @@ Random.int_incl 0 100,
+                    lazy (StdLib.mk_funccall "string.reverse" [expr]));
+                   (true,
+                    lazy (expr))]
+      @@ lazy (fallback ())
+    end
+  | _ -> fallback ()
 
 let to_function ctx ty expr =
   let open Ast in
-  (* TODO: This is not finished. *)
-  let lambda_body =
-    ReturnStmt{ return_exprs = [IntExpr(Random.int_incl (-100) (100))] }
+  let fallback () =
+    let lambda_body =
+      ReturnStmt{ return_exprs = [IntExpr(Random.int_incl (-100) (100))] }
+    in
+    LambdaExpr{ lambda_args = [];
+                lambda_body }
   in
-  LambdaExpr{ lambda_args = [];
-              lambda_body }
+  fallback ()
 
 let to_table ctx ty expr =
   let open Ast in
-  (* TODO: This is not finished. *)
+  let fallback () =
+    let dummy = IntExpr(42) in
+    TableExpr(TArray{ table_elements = [dummy] })
+  in
   match ty with
   | TyTable -> expr
-  | _ -> begin
-      let dummy = IntExpr(42) in
-      TableExpr(TArray{ table_elements = [dummy] })
-    end
+  | _ -> fallback ()

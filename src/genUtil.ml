@@ -278,31 +278,32 @@ let gen_combine_unop ty =
 (** Generates name of the function which takes a single argument of type [ty]
     and returns an expression of the same [ty]. *)
 let gen_combine_un_funcall ctx ty =
-  (* TODO: This is not finished. Need more functions from standard library. *)
   let open Ast in
+  let open Context in
+  let open Config in
   match ty with
   | TyNil      -> None
   | TyBoolean  -> None
-  | TyInt      -> begin
-      if ctx.Context.ctx_config.Config.c_use_math_log then
-        Some("math.log")
-      else
-        None
-    end
-  | TyFloat    -> begin
-      if ctx.Context.ctx_config.Config.c_use_math_log then
-        Some("math.log")
-      else
-        None
-    end
-  | TyString   -> begin
-      if Random.bool () && ctx.Context.ctx_config.Config.c_use_string_lower then
-        Some("string.lower")
-      else if ctx.Context.ctx_config.Config.c_use_string_upper then
-        Some("string.upper")
-      else
-        None
-    end
+  | TyInt ->
+    Util.choose [(ctx.ctx_config.c_use_math_log,
+                  lazy (Some("math.log")));
+                 (true),
+                 lazy (None)]
+    @@ lazy (None)
+  | TyFloat ->
+    Util.choose [(ctx.ctx_config.c_use_math_log,
+                  lazy (Some("math.log")));
+                 (true),
+                 lazy (None)]
+    @@ lazy (None)
+  | TyString ->
+    Util.choose [(ctx.ctx_config.c_use_string_lower,
+                  lazy (Some("string.upper")));
+                 (ctx.ctx_config.c_use_string_upper,
+                  lazy (Some("string.lower")));
+                 (true),
+                 lazy (None)]
+    @@ lazy (None)
   | TyFunction -> None
   | TyTable    -> None
   | TyAny      -> None
@@ -373,9 +374,7 @@ let gen_combine_binop ty lhs rhs =
         end
       | _ -> select_safe ()
     end
-  | TyString   -> begin
-      Some(OpConcat)
-    end
+  | TyString   -> None (* skip, because concat ('..') operators are horrible slow *)
   | TyFunction -> None
   | TyTable    -> None
   | TyAny      -> None
@@ -391,7 +390,7 @@ let rec combine ctx ty exprs =
   | [expr] -> begin
       match gen_combine_unop ty with
       | Some un_op -> begin
-          (* Create unary expression. *)
+          (* Create an unary expression. *)
           Some(UnExpr{ un_op;
                        un_expr = expr })
         end
@@ -408,7 +407,7 @@ let rec combine ctx ty exprs =
                                  fc_args = [expr] })
             end
           | None -> begin
-              (* Just use value "as is". *)
+              (* Just use this value "as is". *)
               Some(expr)
             end
         end

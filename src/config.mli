@@ -30,6 +30,20 @@ type t = {
   c_use_string_lower: bool;
   (** Use string.sub(). *)
   c_use_string_sub: bool;
+  (** Use string.reverse(). *)
+  c_use_string_reverse: bool;
+  (** Use string.len(). *)
+  c_use_string_len: bool;
+  (** Use math.type() *)
+  c_use_math_type: bool;
+  (** Use math.ult() *)
+  c_use_math_ult: bool;
+  (** Use math.sin() *)
+  c_use_math_sin: bool;
+  (** Use math.cos() *)
+  c_use_math_cos: bool;
+  (** Use math.pi *)
+  c_use_math_pi: bool;
   (** Use math.log() *)
   c_use_math_log: bool;
   (** Use math.floor(). *)

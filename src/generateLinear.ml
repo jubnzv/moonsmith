@@ -13,7 +13,7 @@ let generate ctx env =
   (* Randomly peek some idents for the rhs.
      Or just generate some simple expressions. *)
   let peek_rhs_parts () =
-    let rhs_num = Random.int_incl 2 8 in
+    let rhs_num = Random.int_incl 2 3 in
     let peek () =
       match Random.int_incl 0 8 with
       (* TODO: Need to figure out with types of the lhs. *)
@@ -22,7 +22,7 @@ let generate ctx env =
       | _         -> GenUtil.gen_simple_expr ()
     in
     let rec gen acc =
-      if (List.length acc) > rhs_num then acc
+      if (List.length acc) >= rhs_num then acc
       else begin
         gen (acc @ [peek ()])
       end
