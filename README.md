@@ -6,7 +6,9 @@ This tool could be used to evaluate tooling that works with Lua: parsers, transp
 
 ## Description
 
-moonsmith generates a syntactically and semantically correct Lua program, which always successfully terminates in a short time. The core idea behind the algorithm of generated programs is to generate some global data and a few functions and methods, which mutate it. At the end of top-level the generated program calls all generated functions and combines results to a single integer. Then it prints this integer to the stdout.
+moonsmith generates a syntactically and semantically correct Lua program, which always successfully terminates in a short time.
+
+The core idea behind the algorithm of generated programs is to generate some global data and a few functions and methods, which mutate it. At the end of top-level the generated program calls all generated functions and combines results to a single integer. Then it prints this integer to the stdout.
 
 Here is an example of randomly generated program:
 
@@ -20,6 +22,8 @@ Here is an example of randomly generated program:
 --                                                    --
 -- Seed:                   42                         --
 --------------------------------------------------------
+
+local ms = require('lua/lib')
 
 --------------------------------------------------------
 -- Global datums definitions (  5 statements)         --
@@ -35,25 +39,26 @@ datum4 = 33
 --------------------------------------------------------
 -- @return float
 function datum2:m5()
-  local v20, v22, v24, v26 = "amet dolor", -63.647967, 77.379536, false
-  v28, v30 = "anim laborum in consectetur", "et culpa"
-  v32, v34, v36, v38 = "Excepteur ullamco dolore commodo", false, 0x1.90e4faf0243cp+1, -0x1.9218b4aa4f36p+5
+  local v20, v22, v24, v26 = "amet dolor", -63.647967, 7.737954e+01, false
+  v28, v30 = "anim laborum in consectetur", [[et
+culpa]]
+  v32, v34, v36, v38 = "Excepteur ullamco dolore commodo", false, 0x1.90e4faf0243cp+1, -5.026206e+01
   if v22 ~= -60.801529 then
-      v22 = 8.561483e+01 - math.pi - -(math.cos(v22))
+      v22 = 0x1.5675953fc316p+6 - math.pi - -(math.cos(v22))
       v22 = math.cos(v22) + math.pi - -(math.sin(118.962421))
   else
       v20 = math.type(v24)
       v20 = "et"
-      v22 = math.pi - -(0x1.c4b345d2b1f7p+5)
+      v22 = math.pi - -(56.587536)
   end
   local cond42 = 5
   repeat
       v24 = math.cos(85) + math.cos(v22) - -(math.cos(v22))
       v22 = math.cos(46) - -(math.pi)
-      cond42 = cond42 + 0x3
-  until cond42 <= 41
-  v22 = math.cos(64) + math.cos(-89) + -(28.568375)
-  v24 = 58.966061 + math.pi - -(math.cos(0x7FFFFFFFFFFFFFB7))
+      cond42 = cond42 + 3
+  until cond42 <= 0x29
+  v22 = math.cos(64) + math.cos(-89) + -(2.856838e+01)
+  v24 = 58.966061 + math.pi - -(math.cos(-73))
   return math.pi + math.cos(v22) + -(math.cos(v24))
 end
 
@@ -66,11 +71,11 @@ function func6(a0, a1, a2)
   v47, v49, v51, v53 = a0, a1, datum4, "labore"
   for i, v in ipairs(datum2) do
       a1 = math.cos(a2) + 0.913118 + -(math.pi)
-      v45 = true == math.ult(-5, 0x13) == not math.ult(9, -12)
+      v45 = true == math.ult(0x7FFFFFFFFFFFFFFB, 19) == not math.ult(0x9, -12)
       v45 = false ~= not true
   end
   local cond58 = 103
-  while cond58 >= 0x3D do
+  while cond58 >= 61 do
       a2 = -53 - -51 + -(-20)
       v43 = true == not math.ult(52, 1)
       a1 = 40.995075 + 34.833123 - -(16.322830)
@@ -78,31 +83,31 @@ function func6(a0, a1, a2)
   end
   v45 = false ~= false ~= not false
   for _, v in ipairs(datum2) do
-      a1 = math.cos(111.847627) - math.cos(83.461798) - -(math.pi)
+      a1 = math.cos(1.118476e+02) - math.cos(83.461798) - -(math.pi)
       v45 = false == not true
       v43 = math.ult(a0, 3) == math.ult(a0, 19) == not true
   end
-  local cond61 = 0x8
+  local cond61 = 8
   while cond61 < 34 do
-      a0 = math.floor(22.326842) ~ 33 - ~ -21
+      a0 = math.floor(0x1.653abf0d5aeedp+4) ~ 33 - ~ -21
       cond61 = cond61 + 2
   end
-  return math.cos(a0) + math.sin(a1) - math.cos(a2) + math.pi + -(99.392101)
+  return math.cos(a0) + math.sin(a1) - math.cos(a2) + math.pi + -(9.939210e+01)
 end
 
 -- @param a0 string
 -- @param a1 boolean
 -- @return string
 function datum2:m10(a0, a1)
-  v62, v64, v66, v68 = true, 0x1.afa9746109228p+5, "ut", "aliquip quis amet"
+  v62, v64, v66, v68 = true, 53.957742, "ut", "aliquip quis amet"
   v70, v72 = "ad anim", -92.277310
   v62 = false ~= true == not true
   a1 = true == false == not true
-  v62 = false == math.ult(0x7fffffffffffffcd, 16) == not true
+  v62 = false == math.ult(-51, 16) == not true
   v64 = math.sin(-89) + -(72.583285)
   if datum4 == -55 then
       a0 = "non do sunt culpa"
-      a0 = math.type(172.555027)
+      a0 = math.type(0x1.591c2c8a38031p+7)
       a0 = math.type(79.062824)
   end
   return a0
@@ -120,7 +125,7 @@ function func13(a0)
   local cond97 = false
   while cond97 == true do
       a0 = math.floor(187.033221) - -10 ~ ~ math.floor(v82)
-      a0 = math.floor(v82) - math.floor(93.022665) ~ -(0x7FFFFFFFFFFFFFCF)
+      a0 = math.floor(v82) - math.floor(93.022665) ~ -(-49)
       a0 = math.floor(78.067013) & #(v78) ~ -(15)
       cond97 = true
   end
@@ -129,7 +134,7 @@ function func13(a0)
       a0 = string.len(v78) + -(-44)
   end
   a0 = math.floor(129.132151) + -(string.len("nulla ex"))
-  return math.ult(a0, -5) == true == false == not false
+  return math.ult(a0, 0x7ffffffffffffffb) == true == false == not false
 end
 
 -- @param a0 boolean
@@ -152,12 +157,12 @@ function datum1:m15(a0, a1, a2, a3)
   v100 = false == true ~= not true
   local cond117 = 7
   repeat
-      v98 = math.type(0x7fffffffffffffb8)
-      a0 = true == not math.ult(-3, 18)
+      v98 = math.type(0x7FFFFFFFFFFFFFB8)
+      a0 = true == not math.ult(-3, 0x12)
       a3 = a1
       cond117 = cond117 + 2
   until cond117 <= 20
-  return 21 & #(a1) + string.len(a2) ~ string.len(a3) ~ string.len(v98) & ~ -14
+  return 0x15 & #(a1) + string.len(a2) ~ string.len(a3) ~ string.len(v98) & ~ 0x7FFFFFFFFFFFFFF2
 end
 
 --------------------------------------------------------
@@ -166,7 +171,7 @@ end
 datum2:m5()
 arg119_a0 = -14
 arg121_a1 = 73.168995
-arg123_a2 = 0x7fffffffffffffb0
+arg123_a2 = -80
 func6(arg119_a0, arg121_a1, arg123_a2)
 arg126_a0 = "veniam Excepteur"
 arg128_a1 = true
@@ -182,10 +187,10 @@ datum1:m15(arg133_a0, arg135_a1, arg137_a2, arg139_a3)
 --------------------------------------------------------
 -- Combining and printing result                      --
 --------------------------------------------------------
-r_datum0 = 0x7fffffffffffff9f
-r_datum1 = -68
-r_datum2 = 0x7fffffffffffffbf
-r_datum3 = 0x7fffffffffffffb1
+r_datum0 = ms.table_to_int(datum0)
+r_datum1 = ms.table_to_int(datum1)
+r_datum2 = #(datum2)
+r_datum3 = #(datum3)
 r_datum4 = datum4
 RESULT = r_datum4 - r_datum3 ~ r_datum2 ~ r_datum1 << r_datum0
 print(RESULT)
@@ -224,5 +229,7 @@ output/bin/moonsmith
 See output of the `--help` option to get the complete set of command-line options.
 
 To perform an evaluation of your tool, that works with Lua, it may be convenient to write a script that generates a random program and runs your tool over it to check output or return code. You can check an example of such script in the test suite in *test* directory.
+
+moonsmith also tries to use external module with utility functions written in Lua. They are stored in *lua/lib.lua* by default. This is an optional feature, and you could disable it using `-n` command-line flag, or override some functionality. if you want.
 
 If you also need some complicated configuration, (for example, you want to disable some Lua constructions which your tooling doesn't support yet), please check *config.ml* file in the source tree. You can disable some options there and recompile the project to get results. These values intentionally weren't moved to the configuration file or CLI arguments, because not many users may want such subtle configuration.

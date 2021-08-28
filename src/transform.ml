@@ -47,12 +47,14 @@ let string_to_int ctx expr =
     table to integer. *)
 let table_to_int ctx expr =
   let open Ast in
-  if ctx.Context.ctx_config.Config.c_use_length then
-    (* Just take a length of the table. *)
-    UnExpr{ un_op = OpLen;
-            un_expr = expr }
-  else (* Well, we can't convert it in such restricted case. *)
-    IntExpr(Random.int_incl 1 10)
+  let open Config in
+  let open Context in
+  let fallback () = IntExpr(Random.int_incl 1 10) in
+  Util.choose [(ctx.ctx_config.c_use_length),
+               lazy (UnExpr{ un_op = OpLen; un_expr = expr });
+               (Option.is_some ctx.ctx_config.c_lib_path),
+               lazy (StdLib.mk_funccall "ms.table_to_int" [expr])]
+  @@ lazy (fallback ())
 
 let to_nil ctx ty expr =
   let open Ast in
@@ -78,15 +80,16 @@ let to_boolean ctx ty expr =
 
 let to_int ctx ty expr =
   let open Ast in
+  let fallback () = IntExpr(Random.int_incl (-100) 100) in
   match ty with
-  | TyNil      -> IntExpr(Random.int_incl (-100) 100)
-  | TyBoolean  -> IntExpr(Random.int_incl (-100) 100)
+  | TyNil      -> fallback ()
+  | TyBoolean  -> fallback ()
   | TyInt      -> expr
   | TyFloat    -> float_to_int ctx expr
   | TyString   -> string_to_int ctx expr
-  | TyFunction -> IntExpr(Random.int_incl (-100) 100)
-  | TyTable    -> IntExpr(Random.int_incl (-100) 100)
-  | TyThread | TyUserdata | TyAny -> IntExpr(Random.int_incl (-100) 100)
+  | TyFunction -> fallback () (* TODO: Check return type *)
+  | TyTable    -> table_to_int ctx expr
+  | TyThread | TyUserdata | TyAny -> fallback ()
 
 let to_float ctx ty expr =
   let open Ast in

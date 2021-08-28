@@ -2,6 +2,8 @@
 type t = {
   c_indent: string;
   (** Minimum number of datums defined on the top-level. *)
+  c_lib_path: string option;
+  (** Path to external Lua module used in runtime. *)
   c_min_toplevel_datums: int;
   (** Maximum number of datums defined on the top-level. *)
   c_max_toplevel_datums: int;

@@ -9,3 +9,5 @@ val choose : (bool * 'a lazy_t) list -> 'a lazy_t -> 'a
 val replace : 'a list -> int -> 'a -> 'a list
 
 val ( -- ) : int -> int -> int list
+
+val endswith : string -> string -> bool

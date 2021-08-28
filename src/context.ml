@@ -110,7 +110,7 @@ let get_datum_tables_i ctx =
         else match List.nth_exn assign.assign_lhs 0 with
           | Ast.IdentExpr id -> begin
               match id.id_ty with
-              | Ast.TyTable _ -> acc @ [(i, Ast.IdentExpr(id))]
+              | Ast.TyTable -> acc @ [(i, Ast.IdentExpr(id))]
               | _ -> acc
             end
           | _ -> acc

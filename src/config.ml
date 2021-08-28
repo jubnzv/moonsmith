@@ -2,6 +2,8 @@
 type t = {
   c_indent: string;
   (** Minimum number of datums defined on the top-level. *)
+  c_lib_path: string option;
+  (** Path to external Lua module used in runtime. *)
   c_min_toplevel_datums: int;
   (** Maximum number of datums defined on the top-level. *)
   c_max_toplevel_datums: int;
@@ -54,6 +56,7 @@ type t = {
 
 let mk_default () =
   { c_indent = "  ";
+    c_lib_path = Some("lua/lib.lua");
     c_min_toplevel_datums = 5;
     c_max_toplevel_datums = 10;
     c_min_toplevel_funcdefs = 4;

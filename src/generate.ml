@@ -1,9 +1,19 @@
 open Core_kernel
 
-open Ast
+
+let get_imports_code ctx =
+  match ctx.Context.ctx_config.Config.c_lib_path with
+  | Some(p) ->
+    let p = if String.length p > 4 && Util.endswith p ".lua" then
+        String.sub p ~pos:(0) ~len:((String.length p) - 4)
+      else p
+    in
+    Printf.sprintf "local ms = require('%s')\n" p
+  | None -> ""
 
 (** Converts all statement in the [ctx] to Lua code. *)
 let ctx_to_string ctx =
+  let open Ast in
   let stmts_to_s ?(cr=true) stmts =
     List.fold_left
       stmts
@@ -18,6 +28,7 @@ let ctx_to_string ctx =
 -- Seed: %20d                         --
 --------------------------------------------------------
 |}) ctx.ctx_seed
+  and imports = get_imports_code ctx
   and datums_header = Printf.sprintf({|--------------------------------------------------------
 -- Global datums definitions (%3d statements)         --
 --------------------------------------------------------|}) (List.length ctx.ctx_datum_stmts)
@@ -38,6 +49,7 @@ let ctx_to_string ctx =
   and result_code = stmts_to_s ~cr:false ctx.ctx_result_stmts
   in
   String.concat [header;
+                 imports;
                  datums_header;
                  datums_code;
                  funcdefs_header;
@@ -64,15 +76,15 @@ let gen_program ctx =
 (** Generates a list of standard functions and saves them in the current
     context. *)
 let gen_standard_functions ctx =
-  let fd_id = mki () in
+  let fd_id = Ast.mki () in
   let gen_print ctx =
-    let fd = FuncDefStmt { fd_id;
-                           fd_receiver = None;
-                           fd_name = "print";
-                           fd_args = [];
-                           fd_has_varags = true;
-                           fd_body = GenUtil.gen_dummy_block ();
-                           fd_ty = [TyNil] }
+    let fd = Ast.FuncDefStmt{ fd_id;
+                              fd_receiver = None;
+                              fd_name = "print";
+                              fd_args = [];
+                              fd_has_varags = true;
+                              fd_body = GenUtil.gen_dummy_block ();
+                              fd_ty = [Ast.TyNil] }
     in
     let ctx = { ctx with Context.ctx_standard_functions = ctx.Context.ctx_standard_functions @ [fd] } in
     ctx.Context.ctx_func_def_map <- Map.set ctx.Context.ctx_func_def_map ~key:fd_id ~data:(ref fd);
