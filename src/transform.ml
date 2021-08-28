@@ -11,7 +11,8 @@ let float_to_int ctx expr =
   let open Ast in
   if ctx.Context.ctx_config.Config.c_use_math_floor then begin
     (* Just use 'math.floor()'. *)
-    let fcf_func = IdentExpr{ id_name = "math.floor";
+    let fcf_func = IdentExpr{ id_id = -1;
+                              id_name = "math.floor";
                               id_ty = TyFunction }
     in
     let fc_ty = FCFunc{ fcf_func } in
@@ -30,7 +31,8 @@ let float_to_int ctx expr =
         fc_id = -1;
         fc_ty = FCFunc{
             fcf_func =
-              IdentExpr{ id_name = "tostring";
+              IdentExpr{ id_id = -1;
+                         id_name = "tostring";
                          id_ty = TyFunction } };
         fc_args = [floored] }
     in
@@ -44,7 +46,8 @@ let float_to_int ctx expr =
       fc_ty =
         FCFunc{
           fcf_func =
-            IdentExpr{ id_name = "string.sub";
+            IdentExpr{ id_id = -1;
+                       id_name = "string.sub";
                        id_ty = TyFunction }};
       fc_args = [tostring; IntExpr(1); len_expr] }
   end
@@ -101,8 +104,8 @@ let to_int ctx ty expr =
   | TyFloat    -> float_to_int ctx expr
   | TyString   -> string_to_int ctx expr
   | TyFunction -> IntExpr(Random.int_incl (-100) 100)
-  | TyTable _  -> IntExpr(Random.int_incl (-100) 100)
-  | TyThread | TyUserdata -> IntExpr(Random.int_incl (-100) 100)
+  | TyTable    -> IntExpr(Random.int_incl (-100) 100)
+  | TyThread | TyUserdata | TyAny -> IntExpr(Random.int_incl (-100) 100)
 
 let to_float ctx ty expr =
   let open Ast in
@@ -127,7 +130,7 @@ let to_table ctx ty expr =
   let open Ast in
   (* TODO: This is not finished. *)
   match ty with
-  | TyTable _ -> expr
+  | TyTable -> expr
   | _ -> begin
       let dummy = IntExpr(42) in
       TableExpr(TArray{ table_elements = [dummy] })

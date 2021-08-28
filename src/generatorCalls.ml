@@ -19,7 +19,8 @@ let gen_fcall_from_fdef stmt =
                         (Context.get_free_idx ())
                         id.id_name
                     in
-                    let new_ident = IdentExpr{ id_name = new_name;
+                    let new_ident = IdentExpr{ id_id = Context.get_free_idx ();
+                                               id_name = new_name;
                                                id_ty = id.id_ty } in
                     let init = GenUtil.gen_init_stmt_for_ident new_ident in
                     acc @ [(new_ident, init)]
@@ -33,7 +34,8 @@ let gen_fcall_from_fdef stmt =
         | Some r -> FCMethod { fcm_receiver = r;
                                fcm_method = fd.fd_name }
         | None -> begin
-            let fcf_func = IdentExpr{ id_name = fd.fd_name;
+            let fcf_func = IdentExpr{ id_id = Context.get_free_idx ();
+                                      id_name = fd.fd_name;
                                       id_ty = TyFunction }
             in
             FCFunc{ fcf_func }

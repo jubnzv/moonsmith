@@ -4,19 +4,25 @@ open Core_kernel
     have methods and could be inherited. The methods can be randomly generated
     later by the [GeneratorFuncDefs] generator.
     For more details, see: https://www.lua.org/pil/16.html *)
-let gen_datum_table tyt_id  =
-  Ast.TyTable{ tyt_id;
-               tyt_method_ids = [] }
-
-let gen_datum_ident () =
-  let idx = Context.get_free_idx () in
-  let id_name = Printf.sprintf "datum%d" idx
-  and id_ty =
-    if Random.bool () then GenUtil.gen_simple_ty ()
-    else gen_datum_table idx
+let gen_datum_table ctx idx id_name =
+  let id = Ast.IdentExpr{ id_id = idx;
+                          id_name;
+                          id_ty = TyTable }
   in
-  Ast.IdentExpr{ id_name;
-                 id_ty }
+  ctx.Context.ctx_oop_table_methods_map <- Map.set
+      ~key:idx
+      ~data:([])
+      ctx.Context.ctx_oop_table_methods_map;
+  id
+
+let gen_datum_ident ctx =
+  let idx = Context.get_free_idx () in
+  let id_name = Printf.sprintf "datum%d" idx in
+  if Random.bool () then
+    Ast.IdentExpr{ id_id = idx;
+                   id_name;
+                   id_ty = GenUtil.gen_simple_ty () }
+  else gen_datum_table ctx idx id_name
 
 (** Generates a random initializer for the given [lhs]. *)
 let gen_datum_value lhs =
@@ -28,12 +34,12 @@ let gen_datum_value lhs =
       | TyInt -> IntExpr(Random.int_incl (-100) 100)
       | TyFloat -> FloatExpr(Random.float 100.0)
       | TyString -> let v = StringGen.gen_string () in StringExpr(v)
-      | TyTable _ -> begin
+      | TyTable   -> begin
           (* We are generating just empty tables here. They could be extended later. *)
           let table_ty = THashMap{ table_fields = [] } in
           TableExpr(table_ty)
         end
-      | TyFunction | TyThread | TyUserdata | TyNil -> assert false
+      | TyFunction | TyThread | TyUserdata | TyNil | TyAny -> assert false
     end
   | _ -> assert false
 
@@ -41,6 +47,7 @@ let gen_datum_value lhs =
 let gen_random_datum ctx =
   let lhs = gen_datum_ident ctx in
   let rhs = gen_datum_value lhs in
+  Context.add_to_global_env ctx lhs;
   Ast.AssignStmt{ assign_local = Random.bool ();
                   assign_lhs = [lhs];
                   assign_rhs = [rhs]; }
@@ -50,7 +57,7 @@ let generate (ctx : Context.t) =
   let open Config in
   let rec aux acc num =
     if List.length acc >= num then acc
-    else aux (acc @ [gen_random_datum ()]) num
+    else aux (acc @ [gen_random_datum ctx]) num
   in
   let ctx_datum_stmts = aux [] @@ Random.int_incl
       ctx.ctx_config.c_min_toplevel_datums

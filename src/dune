@@ -4,7 +4,7 @@
  ; Enable for debugging:
  ; (modes byte)
  (preprocess
-  (pps ppx_jane)))
+  (pps ppx_deriving.show ppx_deriving.eq)))
 
 (env
  (dev

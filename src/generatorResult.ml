@@ -36,9 +36,9 @@ let gen_num_stmt ctx acc datum_stmt =
                            |> gen_numeric_assign_rhs
             | TyString  -> Transform.to_int ctx TyString lhs
                            |> gen_numeric_assign_rhs
-            | TyTable _ -> Transform.to_int ctx (Ast.table_mk_empty ()) lhs
+            | TyTable   -> Transform.to_int ctx TyTable lhs
                            |> gen_numeric_assign_rhs
-            | TyUserdata | TyThread -> IntExpr(1)
+            | TyUserdata | TyThread | TyAny | TyFunction -> IntExpr(1)
           end
         | _ -> assert false
       end
@@ -46,7 +46,8 @@ let gen_num_stmt ctx acc datum_stmt =
   in
   let rhs = gen_rhs () in
   let id_name = Printf.sprintf "r_%s" !datum_name in
-  let lhs = IdentExpr{ id_name;
+  let lhs = IdentExpr{ id_id = Context.get_free_idx ();
+                       id_name;
                        id_ty = TyInt}
   in
   let assign = AssignStmt{ assign_local = false;
@@ -97,7 +98,8 @@ let gen_combine_stmt num_stmts =
       ~init:None
       ~f:combine
   in
-  let lhs = IdentExpr{ id_name = "RESULT";
+  let lhs = IdentExpr{ id_id = Context.get_free_idx ();
+                       id_name = "RESULT";
                        id_ty = TyInt; }
   and rhs = Option.value combined_expr ~default:(IntExpr(42))
   in
@@ -116,7 +118,8 @@ let gen_print_stmt combine_stmt =
       end
     | _ -> assert false
   in
-  let fcf_func = IdentExpr{ id_name = "print";
+  let fcf_func = IdentExpr{ id_id = -1;
+                            id_name = "print";
                             id_ty = TyFunction }
   in
   let fc_ty = FCFunc{ fcf_func } in

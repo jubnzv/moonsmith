@@ -12,14 +12,18 @@ type cond_term =
     random mutation with this variable. *)
 let gen_cond_var () =
   let open Ast in
-  let id_name = Printf.sprintf "cond%d" @@ Context.get_free_idx () in
+  let idx = Context.get_free_idx () in
+  let id_name = Printf.sprintf "cond%d" idx in
   let (rhs, cond_term, id_ty) = match Random.int_incl 0 3 with
     | 0 -> (IntExpr(Random.int_incl 0 10), CondRaising, TyInt)
     | 1 -> (IntExpr(Random.int_incl 100 125), CondLowering, TyInt)
     | 2 -> (FalseExpr, CondTrue, TyBoolean)
     | _ -> (TrueExpr, CondFalse, TyBoolean)
   in
-  let ident = IdentExpr{ id_name; id_ty } in
+  let ident = IdentExpr{ id_id = idx;
+                         id_name;
+                         id_ty }
+  in
   let assign = AssignStmt{ assign_local = true;
                            assign_lhs = [ident];
                            assign_rhs = [rhs] }

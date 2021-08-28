@@ -9,7 +9,7 @@ let gen_ty () =
   | 3 -> TyFloat
   | 4 -> TyString
   | 5 -> TyFunction
-  | _ -> table_mk_empty ()
+  | _ -> TyTable
 
 let gen_simple_ty () =
   let open Ast in
@@ -50,7 +50,7 @@ let gen_compare_binop ty =
       | _ -> OpGte
     end
   | TyNil | TyBoolean | TyString | TyUserdata
-  | TyFunction | TyThread | TyTable _ | TyAny -> if Random.bool () then OpEq else OpNeq
+  | TyFunction | TyThread | TyTable | TyAny -> if Random.bool () then OpEq else OpNeq
 
 let gen_simple_typed_expr ?(always_positive = false) ty =
   let open Ast in
@@ -68,7 +68,7 @@ let gen_simple_typed_expr ?(always_positive = false) ty =
     if always_positive then FloatExpr(Random.float 150.0)
     else FloatExpr(Random.float_range (-100.0) 100.0)
   | TyString  -> StringExpr(StringGen.gen_string ())
-  | TyTable _ -> gen_array_table_init ()
+  | TyTable -> gen_array_table_init ()
   | TyFunction -> begin
       let lambda_body =
         ReturnStmt{ return_exprs = [IntExpr(Random.int_incl (-100) (100))] }
@@ -80,10 +80,10 @@ let gen_simple_typed_expr ?(always_positive = false) ty =
 
 let gen_ident ?(add_now=false) ?(name=None) env =
   let open Ast in
-  let name =
-    Option.value name ~default:(Printf.sprintf "v%d" @@ Context.get_free_idx ())
-  in
-  let i = IdentExpr{ id_name = name;
+  let idx = Context.get_free_idx () in
+  let name = Option.value name ~default:(Printf.sprintf "v%d" idx) in
+  let i = IdentExpr{ id_id = idx;
+                     id_name = name;
                      id_ty = (gen_simple_ty ()) } in
   let (_ : unit) =
     if add_now then begin env_add_binding env i;         end
@@ -162,8 +162,8 @@ let gen_init_stmt_for_ident ?(assign_local = false) expr =
                       lambda_body }
           |> gen_init_stmt
         end
-      | TyTable _ -> gen_array_table_init () |> gen_init_stmt
-      | TyAny     -> gen_init_stmt NilExpr
+      | TyTable -> gen_array_table_init () |> gen_init_stmt
+      | TyAny   -> gen_init_stmt NilExpr
       | TyUserdata | TyThread -> assert false
     end
   | _ -> assert false
@@ -241,7 +241,7 @@ let gen_combine_unop ty =
   | TyFloat    -> Some(OpSub)
   | TyString   -> None
   | TyFunction -> None
-  | TyTable _  -> None
+  | TyTable    -> None
   | TyAny      -> None
   | TyThread | TyUserdata -> None
 
@@ -274,7 +274,7 @@ let gen_combine_un_funcall ctx ty =
         None
     end
   | TyFunction -> None
-  | TyTable _  -> None
+  | TyTable    -> None
   | TyAny      -> None
   | TyThread | TyUserdata -> None
 
@@ -347,7 +347,7 @@ let gen_combine_binop ty lhs rhs =
       Some(OpConcat)
     end
   | TyFunction -> None
-  | TyTable _  -> None
+  | TyTable    -> None
   | TyAny      -> None
   | TyThread | TyUserdata -> None
 
@@ -369,7 +369,8 @@ let rec combine ctx ty exprs =
           (* Create a function call with a single argument. *)
           match gen_combine_un_funcall ctx ty with
           | Some func_name -> begin
-              let fcf_func = IdentExpr{ id_name = func_name;
+              let fcf_func = IdentExpr{ id_id = Context.get_free_idx ();
+                                        id_name = func_name;
                                         id_ty = TyFunction } in
               let fc_ty = FCFunc{ fcf_func } in
               Some(FuncCallExpr{ fc_id = -1;
@@ -411,7 +412,7 @@ let combine_to_typed_expr ctx ty exprs =
     | TyFloat    -> Transform.to_float
     | TyString   -> Transform.to_string
     | TyFunction -> Transform.to_function
-    | TyTable _  -> Transform.to_table
+    | TyTable    -> Transform.to_table
     | TyThread | TyUserdata | TyAny -> Transform.to_nil
   in
   List.fold_left

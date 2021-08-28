@@ -10,10 +10,9 @@ type ty =
   | TyUserdata
   | TyFunction
   | TyThread
-  | TyTable of { tyt_id: int;
-                 tyt_method_ids: int list; }
+  | TyTable
   | TyAny
-[@@deriving equal]
+[@@deriving eq, show]
 
 (** See: https://www.lua.org/manual/5.3/manual.html#3.4.1 *)
 type operator =
@@ -53,7 +52,8 @@ and expr =
   | IntExpr of int
   | FloatExpr of float
   | StringExpr of string
-  | IdentExpr of { id_name: string;
+  | IdentExpr of { id_id: int;
+                   id_name: string;
                    id_ty: ty }
   | AttrGetExpr of { ag_obj: expr;
                      ag_key: expr }
@@ -122,20 +122,16 @@ let mki =
     !r
 
 let ty_to_s = function
-  | TyNil       -> "nil"
-  | TyBoolean   -> "boolean"
-  | TyInt       -> "int"
-  | TyFloat     -> "float"
-  | TyString    -> "string"
-  | TyUserdata  -> "userdata"
-  | TyFunction  -> "function"
-  | TyThread    -> "thread"
-  | TyTable _   -> "table"
-  | TyAny       -> "any"
-
-let table_mk_empty () =
-  TyTable{ tyt_id = -1;
-           tyt_method_ids = [] }
+  | TyNil      -> "nil"
+  | TyBoolean  -> "boolean"
+  | TyInt      -> "int"
+  | TyFloat    -> "float"
+  | TyString   -> "string"
+  | TyUserdata -> "userdata"
+  | TyFunction -> "function"
+  | TyThread   -> "thread"
+  | TyTable    -> "table"
+  | TyAny      -> "any"
 
 let get_essential_ty expr =
   match expr with
@@ -145,7 +141,7 @@ let get_essential_ty expr =
   | FloatExpr _          -> Some(TyFloat)
   | StringExpr _         -> Some(TyString)
   | IdentExpr id         -> Some(id.id_ty)
-  | TableExpr _          -> Some(table_mk_empty ())
+  | TableExpr _          -> Some(TyTable)
   | LambdaExpr _         -> Some(TyFunction)
   | _ -> None
 
@@ -161,7 +157,7 @@ let types_are_comparable ty_lhs ty_rhs =
   | (TyUserdata, TyUserdata) -> false
   | (TyFunction, TyFunction) -> false
   | (TyThread, TyThread)     -> false
-  | (TyTable _ , TyTable _)  -> false
+  | (TyTable, TyTable)       -> false
   | _ -> false
 
 let get_block_env_exn = function
@@ -235,15 +231,32 @@ let env_shuffle_local_bindings env =
     get_shuffled_idxes () |> aux [] 0
   end
 
-let env_find_binding_with_ty env ty =
-  let filter e =
-    match !e with
-    | IdentExpr id -> if equal_ty id.id_ty ty then true else false
-    | _ -> false
+let env_find_binding_with_ty ?(depth = 1000) env ty =
+  let find env =
+    let filter e =
+      match !e with
+      | IdentExpr id -> if equal_ty id.id_ty ty then true else false
+      | _ -> false
+    in
+    match List.filter env.env_bindings ~f:filter with
+    | [x] -> Some(!x)
+    | [] -> None
+    | l -> Some(!(Util.choose_one_exn l))
   in
-  match List.find env.env_bindings ~f:filter with
-  | Some er -> Some(!er)
-  | None -> None
+  let rec aux env current_depth =
+    if current_depth < depth then
+      match find env with
+      | Some v -> Some v
+      | None ->
+        if env_has_parent env then begin
+          aux (env_get_parent_exn env) (current_depth + 1)
+        end
+        else
+          None
+    else
+      None
+  in
+  aux env 0
 
 let env_add_binding env ident =
   env.env_bindings <- env.env_bindings @ [ref ident];

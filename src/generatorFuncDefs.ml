@@ -11,12 +11,12 @@ let gen_return_exprs ctx env return_types =
   in
   let get_ty = function
     | TyNil     -> aux TyBoolean
-    | TyTable _ -> aux @@ Ast.table_mk_empty ()
+    | TyTable   -> aux TyTable
     | TyBoolean -> aux TyBoolean
     | TyInt     -> aux TyInt
     | TyFloat   -> aux TyFloat
     | TyString  -> aux TyString
-    | TyThread | TyUserdata | TyFunction -> NilExpr
+    | TyThread | TyUserdata | TyFunction | TyAny -> NilExpr
   in
   (* Function that returns doesn't have expr types is a routine. We don't
      need a return statement at all then. *)
@@ -75,29 +75,24 @@ let gen_args max_args env =
 let add_method_to_datum_table ctx method_id idx =
   let open Context in
   let open Ast in
-  let updated_table = match List.nth_exn ctx.ctx_datum_stmts idx with
-    | AssignStmt s -> begin
-        if (List.length s.assign_lhs) < 1 then assert false
-        else begin
-          let lhs = List.nth_exn s.assign_lhs 0 in
-          match lhs with
-          | IdentExpr id -> begin
-              match id.id_ty with
-              | TyTable t -> begin
-                  let new_tyt_method_ids = t.tyt_method_ids @ [method_id] in
-                  let new_id_ty = TyTable{ t with tyt_method_ids = new_tyt_method_ids } in
-                  let new_lhs = IdentExpr{ id with id_ty = new_id_ty } in
-                  AssignStmt{ s with assign_lhs = [new_lhs] }
-                end
-              | _ -> assert false
+  match List.nth_exn ctx.ctx_datum_stmts idx with
+  | AssignStmt s -> begin
+      match List.nth_exn s.assign_lhs 0 with
+      | IdentExpr id -> begin
+          match id.id_ty with
+          | TyTable -> begin
+              let method_ids = Map.find_exn ctx.ctx_oop_table_methods_map id.id_id in
+              let method_ids = method_ids @ [method_id] in
+              ctx.Context.ctx_oop_table_methods_map <- Map.set
+                  ~key:idx
+                  ~data:(method_ids)
+                  ctx.Context.ctx_oop_table_methods_map;
             end
           | _ -> assert false
         end
-      end
-    | _ -> assert false
-  in
-  let new_datums = Util.replace ctx.ctx_datum_stmts idx updated_table in
-  ctx.ctx_datum_stmts <- new_datums
+      | _ -> assert false
+    end
+  | _ -> assert false
 
 (** Generates a random statement that defines some local variables in the
     given [env] *)

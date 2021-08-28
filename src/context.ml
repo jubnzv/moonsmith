@@ -14,7 +14,7 @@ type t = {
   ctx_result_stmts: Ast.stmt list;
   (** Statements that combine and print result data. *)
 
-  ctx_global_env: Ast.env;
+  mutable ctx_global_env: Ast.env;
   (** Global environment for the top-level. *)
 
   ctx_standard_functions: Ast.stmt list;
@@ -23,8 +23,9 @@ type t = {
   ctx_config : Config.t;
   (** User-defined configuration. *)
 
-  mutable ctx_oop_table_methods_map: (int, Ast.stmt ref list, Int.comparator_witness) Base.Map.t;
-  (** Map that associates ids of OOP tables with definitions of their methods. *)
+  mutable ctx_oop_table_methods_map: (int, int list, Int.comparator_witness) Base.Map.t;
+  (** Map that associates ids of OOP tables with ids of definitions of their
+      methods. *)
 
   mutable ctx_func_def_map: (int, Ast.stmt ref, Int.comparator_witness) Base.Map.t;
   (** Map that associates ids of FuncDefStmts with pointer to their AST nodes. *)
@@ -53,6 +54,9 @@ let mk_context (c : Config.t) =
   ctx
 (* let ctx = gen_standard_functions ctx in *)
 
+let add_to_global_env ctx expr =
+  Ast.env_add_binding ctx.ctx_global_env expr
+
 let get_datum_tables ctx =
   let ff = function
     | Ast.AssignStmt assign -> begin
@@ -60,7 +64,7 @@ let get_datum_tables ctx =
         else match List.nth_exn assign.assign_lhs 0 with
           | Ast.IdentExpr id -> begin
               match id.id_ty with
-              | Ast.TyTable _ -> true
+              | Ast.TyTable -> true
               | _ -> false
             end
           | _ -> false

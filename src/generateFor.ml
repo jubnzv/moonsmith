@@ -21,11 +21,11 @@ let gen_number_for ctx env =
     |> GenerateLinear.generate_stmts ctx env
     |> GenUtil.extend_block_stmt block
   in
-  NumForStmt { nfor_name = "i";
-               nfor_init;
-               nfor_limit;
-               nfor_step;
-               nfor_body = block; }
+  NumForStmt{ nfor_name = "i";
+              nfor_init;
+              nfor_limit;
+              nfor_step;
+              nfor_body = block; }
 
 let can_generate_generic_loop ctx =
   if ctx.Context.ctx_config.Config.c_use_pairs ||
@@ -46,8 +46,10 @@ let gen_iterator_exn ctx arg =
   in
   let name = Util.choose_one_exn names in
   FuncCallExpr{ fc_id = -1;
-                fc_ty = FCFunc{ fcf_func = IdentExpr{ id_name = name;
-                                                      id_ty = TyFunction } };
+                fc_ty = FCFunc{ fcf_func =
+                                  IdentExpr{ id_id = Context.get_free_idx ();
+                                             id_name = name;
+                                             id_ty = TyFunction } };
                 fc_args = [arg] }
 
 (** Generates variables used as lhs in the genertic for loop.
@@ -56,14 +58,16 @@ let gen_iterator_exn ctx arg =
 let gen_for_names for_body =
   let open Ast in
   let gen_var name ty env =
-    let var = IdentExpr{ id_name = name;
+    let var = IdentExpr{ id_id = Context.get_free_idx ();
+                         id_name = name;
                          id_ty = ty }
     in
     env_add_binding env var;
     var
   in
   let gen_wildcard () =
-    IdentExpr{ id_name = "_";
+    IdentExpr{ id_id = -1;
+               id_name = "_";
                id_ty = TyNil }
   in
   match for_body with
@@ -79,7 +83,7 @@ let gen_for_names for_body =
 let gen_generic_for ctx env =
   let open Ast in
   let iterator_arg =
-    env_find_binding_with_ty env @@ table_mk_empty ()
+    env_find_binding_with_ty env TyTable
     |> Option.value ~default:(GenUtil.gen_array_table_init ())
   in
   let iterator_funccall = gen_iterator_exn ctx iterator_arg in

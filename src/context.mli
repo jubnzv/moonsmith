@@ -14,7 +14,7 @@ type t = {
   ctx_result_stmts: Ast.stmt list;
   (** Statements that combine and print result data. *)
 
-  ctx_global_env: Ast.env;
+  mutable ctx_global_env: Ast.env;
   (** Global environment for the top-level. *)
 
   ctx_standard_functions: Ast.stmt list;
@@ -23,8 +23,9 @@ type t = {
   ctx_config : Config.t;
   (** User-defined configuration. *)
 
-  mutable ctx_oop_table_methods_map: (int, Ast.stmt ref list, Int.comparator_witness) Base.Map.t;
-  (** Map that associates ids of OOP tables with definitions of their methods. *)
+  mutable ctx_oop_table_methods_map: (int, int list, Int.comparator_witness) Base.Map.t;
+  (** Map that associates ids of OOP tables with ids of definitions of their
+      methods. *)
 
   mutable ctx_func_def_map: (int, Ast.stmt ref, Int.comparator_witness) Base.Map.t;
   (** Map that associates ids of FuncDefStmts with pointer to their AST nodes. *)
@@ -34,6 +35,9 @@ type t = {
 }
 
 val mk_context : Config.t -> t
+
+(** Adds given expression to the global environment. *)
+val add_to_global_env : t -> Ast.expr -> unit
 
 (** Returns a list of available tables defined in [ctx.ctx_datum_stmts]. *)
 val get_datum_tables : t -> Ast.stmt list

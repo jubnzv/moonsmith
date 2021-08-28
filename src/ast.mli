@@ -8,10 +8,9 @@ type ty =
   | TyUserdata
   | TyFunction
   | TyThread
-  | TyTable of { tyt_id: int;
-                 tyt_method_ids: int list; }
+  | TyTable
   | TyAny
-[@@deriving equal]
+[@@deriving eq, show]
 
 (** See: https://www.lua.org/manual/5.3/manual.html#3.4.1 *)
 type operator =
@@ -51,7 +50,8 @@ and expr =
   | IntExpr of int
   | FloatExpr of float
   | StringExpr of string
-  | IdentExpr of { id_name: string;
+  | IdentExpr of { id_id: int;
+                   id_name: string;
                    id_ty: ty }
   | AttrGetExpr of { ag_obj: expr;
                      ag_key: expr }
@@ -119,8 +119,6 @@ val mki : unit -> int
 
 val ty_to_s : ty -> string
 
-val table_mk_empty : unit -> ty
-
 (** Returns type of the given [expr] when it is known. *)
 val get_essential_ty : expr -> ty option
 
@@ -139,7 +137,11 @@ val env_has_parent : env -> bool
 val env_get_parent_exn : env -> env
 val env_peek_random_exn : env -> expr ref
 val env_shuffle_local_bindings : env -> expr list
-val env_find_binding_with_ty : env -> ty -> expr option
+
+(** Find binding with apropriate type in the given environment and its parents
+    up to [depth]. If [depth] not set, it searches in all available parents. *)
+val env_find_binding_with_ty : ?depth:int -> env -> ty -> expr option
+
 val env_add_binding : env -> expr -> unit
 val env_add_pending_binding : env -> expr -> unit
 val env_flush_pending_bindings : env -> unit
