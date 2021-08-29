@@ -346,9 +346,9 @@ let rec expr_to_s stmt_to_s c expr =
       Printf.sprintf "function (%s) %s end" args_s body_s
     end
   | IntExpr n ->
-    Util.choose [ (phys_equal 0 @@ Random.int_incl 0 10),
+    Util.choose [ (n > 0 && phys_equal 0 @@ Random.int_incl 0 10),
                   lazy (Printf.sprintf "0x%x" n);
-                  (phys_equal 0 @@ Random.int_incl 0 10),
+                  (n > 0 && phys_equal 0 @@ Random.int_incl 0 10),
                   lazy (Printf.sprintf "0x%X" n) ]
     @@ lazy (Printf.sprintf "%d" n)
   | FloatExpr n ->
