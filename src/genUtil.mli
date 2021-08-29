@@ -11,9 +11,6 @@ val gen_ty : unit -> Ast.ty
     + String *)
 val gen_simple_ty : unit -> Ast.ty
 
-(** Generates a simple random expression: boolean, number, nil, string.  *)
-val gen_simple_expr : unit -> Ast.expr
-
 (** Generates a random init for an array table expression.
     See: https://www.lua.org/pil/11.1.html *)
 val gen_array_table_init : unit -> Ast.expr

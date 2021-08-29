@@ -73,25 +73,6 @@ let gen_program ctx =
   |> GeneratorResult.generate
   |> ctx_to_string
 
-(** Generates a list of standard functions and saves them in the current
-    context. *)
-let gen_standard_functions ctx =
-  let fd_id = Ast.mki () in
-  let gen_print ctx =
-    let fd = Ast.FuncDefStmt{ fd_id;
-                              fd_receiver = None;
-                              fd_name = "print";
-                              fd_args = [];
-                              fd_has_varags = true;
-                              fd_body = GenUtil.gen_dummy_block ();
-                              fd_ty = [Ast.TyNil] }
-    in
-    let ctx = { ctx with Context.ctx_standard_functions = ctx.Context.ctx_standard_functions @ [fd] } in
-    ctx.Context.ctx_func_def_map <- Map.set ctx.Context.ctx_func_def_map ~key:fd_id ~data:(ref fd);
-    ctx
-  in
-  gen_print ctx
-
 let generate (c : Config.t) =
   let ctx = Context.mk_context c in
   Random.init ctx.ctx_seed;

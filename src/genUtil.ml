@@ -246,19 +246,6 @@ let take_random_binding env =
   in
   aux env (select_level ()) []
 
-(** Generates combination operator for integer typed expressions. *)
-let gen_int_combine_binop () =
-  let open Ast in
-  match Random.int_incl 0 7 with
-  | 0 -> OpAdd  (* + *)
-  | 1 -> OpSub  (* - *)
-  | 2 -> OpMul  (* * *)
-  | 3 -> OpBAnd (* & *)
-  | 4 -> OpBOr  (* ~ *)
-  | 5 -> OpBRs  (* >> *)
-  | 6 -> OpBLs  (* << *)
-  | _ -> OpBNot (* ~ *)
-
 (** Generates unary operator which can take expression of type [ty] and returns
     an expression of the same [ty]. *)
 let gen_combine_unop ty =
