@@ -98,20 +98,51 @@ let to_nil ctx ty expr =
 
 let to_boolean ctx ty expr =
   let open Ast in
+  let open Context in
+  let open Config in
   let fallback () = if Random.bool () then TrueExpr else FalseExpr in
   match ty with
-  | TyNil -> begin
-      (* 'not nil' always returns true. *)
-      UnExpr{ un_op = OpNot;
-              un_expr = expr }
+  | TyBoolean -> begin
+      Util.choose_lazy_exn [
+        lazy (BinExpr{ bin_lhs = fallback ();
+                       bin_op = Util.choose_one_exn [OpEq; OpNeq];
+                       bin_rhs = expr });
+        lazy (expr);]
     end
   | TyInt -> begin
-      if ctx.Context.ctx_config.Config.c_use_math_ult then
-        StdLib.mk_funccall "math.ult" [expr; IntExpr(Random.int_incl (-20) 20)]
-      else
-        fallback ()
+      Util.choose [(ctx.ctx_config.c_use_math_ult),
+                   lazy (StdLib.mk_funccall "math.ult" [expr; IntExpr(Random.int_incl (-20) 20)]) ]
+      @@ lazy (fallback ())
     end
-  | _ -> fallback ()
+  | TyFloat -> fallback ()
+  | TyString | TyIntString -> begin
+      Util.choose [(true),
+                   lazy (BinExpr{ bin_lhs = StringExpr(StringGen.gen_string ());
+                                  bin_op = Util.choose_one_exn [OpEq; OpNeq];
+                                  bin_rhs = expr })]
+      @@ lazy (fallback ())
+    end
+  | TyTable | TyFunction -> begin
+      Util.choose [(true),
+                   lazy (BinExpr{ bin_lhs = expr;
+                                  bin_op = Util.choose_one_exn [OpEq; OpNeq];
+                                  bin_rhs = NilExpr })]
+      @@ lazy (fallback ())
+    end
+  | TyNil -> begin
+      (* Some logical operations between Booleans and nils returns Booleans. *)
+      Util.choose_lazy_exn [
+        lazy (BinExpr{ bin_lhs = TrueExpr;
+                       bin_op = OpOr;
+                       bin_rhs = expr });
+        lazy (BinExpr{ bin_lhs = expr;
+                       bin_op = OpAnd;
+                       bin_rhs = FalseExpr });
+        (* 'not nil' always returns true. *)
+        lazy (UnExpr{ un_op = OpNot;
+                      un_expr = expr }) ]
+    end
+  | TyUserdata | TyThread | TyAny -> fallback ()
 
 let to_int ctx ty expr =
   let open Ast in
