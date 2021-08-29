@@ -39,160 +39,172 @@ datum4 = 33
 --------------------------------------------------------
 -- @return float
 function datum2:m5()
-  local v20, v22, v24, v26 = "amet dolor", -63.647967, 7.737954e+01, false
-  v28, v30 = "anim laborum in consectetur", [[et
-culpa]]
-  v32, v34, v36, v38 = "Excepteur ullamco dolore commodo", false, 0x1.90e4faf0243cp+1, -5.026206e+01
-  if v22 ~= -60.801529 then
-      v22 = 0x1.5675953fc316p+6 - math.pi - -(math.cos(v22))
-      v22 = math.cos(v22) + math.pi - -(math.sin(118.962421))
-  else
-      v20 = math.type(v24)
-      v20 = "et"
-      v22 = math.pi - -(56.587536)
-  end
-  local cond42 = 5
+  local v22, v24, v26 = "et ullamco laborum", 62.085799, 26
+  local v28, v30, v32 = "laborum in", -4.860915e+01, "tempor quis"
+  v24 = 5.729946 - math.pi - -(math.pi)
+  v22 = "anim"
+  local cond35 = 9
   repeat
-      v24 = math.cos(85) + math.cos(v22) - -(math.cos(v22))
-      v22 = math.cos(46) - -(math.pi)
-      cond42 = cond42 + 3
-  until cond42 <= 0x29
-  v22 = math.cos(64) + math.cos(-89) + -(2.856838e+01)
-  v24 = 58.966061 + math.pi - -(math.cos(-73))
-  return math.pi + math.cos(v22) + -(math.cos(v24))
+      v24 = math.cos(v24) - 56.973951 - -(math.pi)
+      v24 = math.cos(v24) - 73.589347 - -(math.cos(v24))
+      cond35 = cond35 + 3
+  until cond35 <= 45
+  v22 = "minim culpa eiusmod"
+  local cond37 = 5
+  repeat
+      v22 = math.type(85)
+      v22 = math.type(53)
+      cond37 = cond37 + 3
+  until cond37 <= 41
+  return math.pi - -(math.cos(v24))
 end
 
--- @param a0 int
--- @param a1 float
--- @param a2 int
--- @return float
-function func6(a0, a1, a2)
-  v43, v45 = true, false
-  v47, v49, v51, v53 = a0, a1, datum4, "labore"
-  for i, v in ipairs(datum2) do
-      a1 = math.cos(a2) + 0.913118 + -(math.pi)
-      v45 = true == math.ult(0x7FFFFFFFFFFFFFFB, 19) == not math.ult(0x9, -12)
-      v45 = false ~= not true
+-- @param a0 float
+-- @param a1 boolean
+-- @param a2 string
+-- @param a3 int
+-- @param a4 string
+-- @return nil
+function func6(a0, a1, a2, a3, a4)
+  v39, v41 = -97.502688, "2"
+  local v43, v45, v47, v49 = "nisi", -77, a2, a1
+  v51, v53 = datum4, a1
+  for i, _ in ipairs(datum3) do
+      a2 = a4
+      v39 = math.pi - -(7.274771e+01)
   end
-  local cond58 = 103
-  while cond58 >= 61 do
-      a2 = -53 - -51 + -(-20)
-      v43 = true == not math.ult(52, 1)
-      a1 = 40.995075 + 34.833123 - -(16.322830)
-      cond58 = cond58 - 3
+  v43 = math.type(-78)
+  for i, _ in ipairs(datum1) do
+      v41 = "1"
   end
-  v45 = false ~= false ~= not false
-  for _, v in ipairs(datum2) do
-      a1 = math.cos(1.118476e+02) - math.cos(83.461798) - -(math.pi)
-      v45 = false == not true
-      v43 = math.ult(a0, 3) == math.ult(a0, 19) == not true
+  if a3 ~= 44 then
+      a3 = -50 + ~ -78
+      a0 = 80.030963 - 2.273377 - -(math.cos(9))
+      a3 = 94 + ~ string.len("nulla")
+  else
+      a3 = -61 - ~ #(a2)
+      a4 = math.type(a3)
   end
-  local cond61 = 8
-  while cond61 < 34 do
-      a0 = math.floor(0x1.653abf0d5aeedp+4) ~ 33 - ~ -21
-      cond61 = cond61 + 2
-  end
-  return math.cos(a0) + math.sin(a1) - math.cos(a2) + math.pi + -(9.939210e+01)
+  return false ~= a1 == "adipiscing nostrud" == a2 ~= math.ult(a3, 0x4) ~= "et nisi dolore" ~= a4 == true == "nostrud exercitation cillum" == v41 == not "in do reprehenderit pariatur" ~= v43
 end
 
 -- @param a0 string
--- @param a1 boolean
 -- @return string
-function datum2:m10(a0, a1)
-  v62, v64, v66, v68 = true, 53.957742, "ut", "aliquip quis amet"
-  v70, v72 = "ad anim", -92.277310
-  v62 = false ~= true == not true
-  a1 = true == false == not true
-  v62 = false == math.ult(-51, 16) == not true
-  v64 = math.sin(-89) + -(72.583285)
-  if datum4 == -55 then
-      a0 = "non do sunt culpa"
-      a0 = math.type(0x1.591c2c8a38031p+7)
-      a0 = math.type(79.062824)
+local func12 = function (a0)
+  v62, v64, v66 = false, "1", [[2]]
+  v68, v70, v72, v74 = a0, datum4, v62, "veniam dolore"
+  v76, v78, v80 = "nostrud qui consequat", "proident aliquip Ut", "9"
+  if v64 ~= [[3]] then
+      v62 = math.ult(-98, -6) == not true ~= false
+      a0 = v64
+      a0 = tostring(-73)
+  else
+      v64 = "5"
+      v64 = tostring(-60)
+  end
+  v66 = "1"
+  a0 = v64
+  if a0 ~= [[4]] then
+      v62 = false ~= "quis nisi nisi" == a0 ~= not math.ult(-11, 12)
+      v62 = false ~= not "ut" ~= "esse proident in"
+      v62 = false == false == not false == v62
+  else
+      v62 = true ~= true == false == not "adipiscing consequat" == a0
+      v66 = a0
+      a0 = "8"
+  end
+  if v62 == true then
+      a0 = "2"
+  else
+      v64 = v66
+      v62 = math.ult(-4, 11) == "proident in fugiat laborum" == v64 ~= not math.ult(-37, 5)
   end
   return a0
 end
 
--- @param a0 int
--- @return boolean
-function func13(a0)
-  local v78, v80, v82 = "ad", true, -31.820621
-  v84, v86 = "consequat consectetur sunt", false
-  local v88, v90, v92 = true, false, v78
+-- @param a0 string
+-- @param a1 string
+-- @param a2 boolean
+-- @param a3 boolean
+-- @return float
+local func14 = function (a0, a1, a2, a3)
+  local v82, v84 = -9.370991e+01, 78.054212
+  local v86, v88, v90 = "9", "8", true
+  if datum3 == {} then
+      v84 = 4.922527e+01 + -(math.cos(113.449562))
+      a2 = true == a3 == not true == true
+      v82 = 7.013714 + math.pi - -(math.pi)
+  else
+      v82 = 6.035996 + math.sin(v84) - -(math.pi)
+      a2 = false == a3 ~= not false ~= true
+  end
+  v82 = math.sin(v84) + math.pi + -(math.cos(0.302638))
   for i, v in ipairs(datum1) do
-      v80 = false == not false
+      a1 = "8"
   end
-  local cond97 = false
-  while cond97 == true do
-      a0 = math.floor(187.033221) - -10 ~ ~ math.floor(v82)
-      a0 = math.floor(v82) - math.floor(93.022665) ~ -(-49)
-      a0 = math.floor(78.067013) & #(v78) ~ -(15)
-      cond97 = true
-  end
-  for i=5,10,3 do
-      v80 = true ~= not true
-      a0 = string.len(v78) + -(-44)
-  end
-  a0 = math.floor(129.132151) + -(string.len("nulla ex"))
-  return math.ult(a0, 0x7ffffffffffffffb) == true == false == not false
+  local cond95 = false
+  repeat
+      a0 = math.type(33)
+      a0 = "consequat in elit"
+      cond95 = true
+  until cond95 ~= false
+  return math.pi + 0x1.fd917296808bfp+5 - 13.263112 + 6.430664e+00 - math.cos(v82) + -(math.sin(v84))
 end
 
--- @param a0 boolean
+-- @param a0 float
 -- @param a1 string
--- @param a2 string
--- @param a3 string
--- @return int
-function datum1:m15(a0, a1, a2, a3)
-  v98, v100, v102, v104 = "anim ut ullamco", true, true, "in sint"
-  local v106, v108, v110 = 9, -92.227784, a0
-  local cond112 = true
-  repeat
-      v98 = math.type(43)
-      a3 = "eiusmod esse laboris"
-      v98 = "mollit in esse esse"
-      cond112 = false
-  until cond112 ~= true
-  a0 = true ~= not false
-  a3 = v98
-  v100 = false == true ~= not true
-  local cond117 = 7
-  repeat
-      v98 = math.type(0x7FFFFFFFFFFFFFB8)
-      a0 = true == not math.ult(-3, 0x12)
-      a3 = a1
-      cond117 = cond117 + 2
-  until cond117 <= 20
-  return 0x15 & #(a1) + string.len(a2) ~ string.len(a3) ~ string.len(v98) & ~ 0x7FFFFFFFFFFFFFF2
+-- @return nil
+local func19 = function (a0, a1)
+  v97, v99, v101, v103 = -39.158628, -15, "4", a0
+  v105, v107, v109, v111 = "4", "qui proident", "9", "7"
+  v97 = math.sin(v97) + math.pi + -(17.112416)
+  if a0 == -29.895999 then
+      a1 = "nulla quis"
+      v99 = math.floor(v97) & ~ -17
+  else
+      v97 = math.pi + -(35.132890)
+  end
+  v99 = math.floor(a0) ~ -54 + ~ 55
+  v97 = math.pi - -(math.pi)
+  for i=0,14,2 do
+      v97 = math.sin(v97) + -(math.sin(51.779741))
+      v99 = -38 ~ -(string.len("cillum"))
+  end
+  return false ~= "aute fugiat veniam nostrud" ~= a1 == false == not math.ult(v99, 0xD)
 end
 
 --------------------------------------------------------
 -- Calling functions                                  --
 --------------------------------------------------------
 datum2:m5()
-arg119_a0 = -14
-arg121_a1 = 73.168995
-arg123_a2 = -80
-func6(arg119_a0, arg121_a1, arg123_a2)
-arg126_a0 = "veniam Excepteur"
-arg128_a1 = true
-datum2:m10(arg126_a0, arg128_a1)
-arg130_a0 = 32
-func13(arg130_a0)
-arg133_a0 = false
-arg135_a1 = "eiusmod nulla"
-arg137_a2 = "culpa nostrud pariatur"
-arg139_a3 = "deserunt in tempor"
-datum1:m15(arg133_a0, arg135_a1, arg137_a2, arg139_a3)
+arg113_a0 = 41.181777
+arg115_a1 = true
+arg117_a2 = [[sed
+in
+in]]
+arg119_a3 = -31
+arg121_a4 = "voluptate sed laborum ea"
+func6(arg113_a0, arg115_a1, arg117_a2, arg119_a3, arg121_a4)
+arg124_a0 = "9"
+func12(arg124_a0)
+arg127_a0 = "officia dolor"
+arg129_a1 = "1"
+arg131_a2 = true
+arg133_a3 = true
+func14(arg127_a0, arg129_a1, arg131_a2, arg133_a3)
+arg136_a0 = 95.503889
+arg138_a1 = "eu consequat esse"
+func19(arg136_a0, arg138_a1)
 
 --------------------------------------------------------
 -- Combining and printing result                      --
 --------------------------------------------------------
 r_datum0 = ms.table_to_int(datum0)
 r_datum1 = ms.table_to_int(datum1)
-r_datum2 = #(datum2)
+r_datum2 = ms.table_to_int(datum2)
 r_datum3 = #(datum3)
 r_datum4 = datum4
-RESULT = r_datum4 - r_datum3 ~ r_datum2 ~ r_datum1 << r_datum0
+RESULT = r_datum4 - r_datum3 << r_datum2 ~ r_datum1 ~ r_datum0
 print(RESULT)
 ```
 
