@@ -103,6 +103,7 @@ and stmt =
   | FuncDefStmt of { fd_id: int;
                      (** Receiver (object) which this function belongs to.
                          If not None, the function is a method. *)
+                     fd_local: bool;
                      fd_receiver: string option;
                      fd_name: string;
                      fd_args: expr list;
@@ -449,16 +450,26 @@ let rec stmt_to_s ?(cr = false) ?(depth = 0) c stmt =
       and name = match fd.fd_receiver with
         | Some r -> Printf.sprintf "%s:%s" r fd.fd_name
         | None -> fd.fd_name
-      in
-      Printf.sprintf "%s\n%sfunction %s(%s%s)\n%s\n%send%s"
-        docstring
-        (mk_i ())
-        name
-        args_code
-        varargs_s
-        body_code
-        (mk_i ())
-        cr_s
+      in if fd.fd_local then
+        Printf.sprintf "%s\n%slocal %s = function (%s%s)\n%s\n%send%s"
+          docstring
+          (mk_i ())
+          name
+          args_code
+          varargs_s
+          body_code
+          (mk_i ())
+          cr_s
+      else
+        Printf.sprintf "%s\n%sfunction %s(%s%s)\n%s\n%send%s"
+          docstring
+          (mk_i ())
+          name
+          args_code
+          varargs_s
+          body_code
+          (mk_i ())
+          cr_s
     end
   | FuncCallStmt s -> begin
       let (name, args_s) = match s.fc_expr with

@@ -101,6 +101,7 @@ and stmt =
   | FuncDefStmt of { fd_id: int;
                      (** Receiver (object) which this function belongs to.
                          If not None, the function is a method. *)
+                     fd_local: bool;
                      fd_receiver: string option;
                      fd_name: string;
                      fd_args: expr list;

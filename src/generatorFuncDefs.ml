@@ -185,18 +185,19 @@ let fill_funcdef ctx fd =
 let gen_funcdef ctx =
   let open Ast in
   let fd_id = mki () in
-  let (fd_name, fd_receiver) = match peek_receiver ctx with
-    | None   -> (Printf.sprintf "func%d" @@ Context.get_free_idx (), None)
+  let (fd_name, fd_receiver, fd_local) = match peek_receiver ctx with
+    | None   -> (Printf.sprintf "func%d" @@ Context.get_free_idx (), None, Random.bool ())
     | Some (datums_idx, receiver_name) -> begin
         let name = Printf.sprintf "m%d" @@ Context.get_free_idx () in
         add_method_to_datum_table ctx fd_id datums_idx;
-        (name, Some(receiver_name))
+        (name, Some(receiver_name), false) (* methods can not be local *)
       end
   and fd_body = GenUtil.gen_empty_block ctx.ctx_global_env in
   let fd_args = gen_args 5 (get_block_env_exn fd_body)
   and fd_has_varags = if phys_equal 0 @@ Random.int_incl 0 10 then true else false
   and fd_ty  = gen_return_types () in
   let fd = FuncDefStmt{ fd_id;
+                        fd_local;
                         fd_receiver;
                         fd_name;
                         fd_args;
