@@ -44,6 +44,23 @@ let string_to_int ctx expr =
   @@ lazy (fallback ())
 
 (** Generates expression that converts the given [IdentExpr] from
+    string containing only integers to integer. *)
+let int_string_to_int ctx expr =
+  let open Ast in
+  let open Context in
+  let open Config in
+  let fallback () = IntExpr(Random.int_incl 1 10) in
+  Util.choose [(ctx.ctx_config.c_use_tonumber),
+               lazy (StdLib.mk_funccall "tonumber" [expr]);
+               (* Use string conversion: "123"+1*)
+               (true,
+                lazy (BinExpr{ bin_lhs = expr;
+                               bin_op = OpAdd;
+                               bin_rhs = IntExpr(Random.int_incl 0 3) }
+                      |> float_to_int ctx))]
+  @@ lazy (fallback ())
+
+(** Generates expression that converts the given [IdentExpr] from
     table to integer. *)
 let table_to_int ctx expr =
   let open Ast in
@@ -58,8 +75,21 @@ let table_to_int ctx expr =
 
 let to_nil ctx ty expr =
   let open Ast in
-  (* TODO: This is not finished. *)
-  NilExpr
+  let open Config in
+  let open Context in
+  let fallback () = NilExpr in
+  match ty with
+  | TyString -> begin
+      (* Using tonumber() with non-numeric string results as nil. *)
+      Util.choose [(ctx.ctx_config.c_use_tonumber),
+                   lazy (StdLib.mk_funccall "tonumber" [expr])]
+      @@ lazy (fallback ())
+    end
+  | TyInt | TyFloat -> begin
+      (* TODO: Using 'nil and <numeric value>' always results as nil. *)
+      fallback ()
+    end
+  | _ -> fallback ()
 
 let to_boolean ctx ty expr =
   let open Ast in
@@ -82,13 +112,14 @@ let to_int ctx ty expr =
   let open Ast in
   let fallback () = IntExpr(Random.int_incl (-100) 100) in
   match ty with
-  | TyNil      -> fallback ()
-  | TyBoolean  -> fallback ()
-  | TyInt      -> expr
-  | TyFloat    -> float_to_int ctx expr
-  | TyString   -> string_to_int ctx expr
-  | TyFunction -> fallback () (* TODO: Check return type *)
-  | TyTable    -> table_to_int ctx expr
+  | TyNil       -> fallback ()
+  | TyBoolean   -> fallback ()
+  | TyInt       -> expr
+  | TyFloat     -> float_to_int ctx expr
+  | TyString    -> string_to_int ctx expr
+  | TyIntString -> int_string_to_int ctx expr
+  | TyFunction  -> fallback () (* TODO: Check return type *)
+  | TyTable     -> table_to_int ctx expr
   | TyThread | TyUserdata | TyAny -> fallback ()
 
 let to_float ctx ty expr =
@@ -138,6 +169,26 @@ let to_string ctx ty expr =
                     lazy (expr))]
       @@ lazy (fallback ())
     end
+  | _ -> fallback ()
+
+let to_int_string ctx ty expr =
+  let open Ast in
+  let open Config in
+  let open Context in
+  let fallback () = StringExpr(StringGen.gen_int_string ()) in
+  match ty with
+  | TyInt -> begin
+      if ctx.ctx_config.c_use_tostring then
+        StdLib.mk_funccall "tostring" [expr]
+      else
+        fallback ()
+    end
+  | TyFloat -> begin
+      Util.choose [(ctx.ctx_config.c_use_tostring),
+                   lazy (StdLib.mk_funccall "tostring" [float_to_int ctx expr])]
+      @@ lazy (fallback ())
+    end
+  | TyIntString -> expr
   | _ -> fallback ()
 
 let to_function ctx ty expr =

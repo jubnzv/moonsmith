@@ -6,6 +6,7 @@ type ty =
   | TyBoolean
   | TyInt
   | TyFloat
+  | TyIntString
   | TyString
   | TyUserdata
   | TyFunction
@@ -123,16 +124,17 @@ let mki =
     !r
 
 let ty_to_s = function
-  | TyNil      -> "nil"
-  | TyBoolean  -> "boolean"
-  | TyInt      -> "int"
-  | TyFloat    -> "float"
-  | TyString   -> "string"
-  | TyUserdata -> "userdata"
-  | TyFunction -> "function"
-  | TyThread   -> "thread"
-  | TyTable    -> "table"
-  | TyAny      -> "any"
+  | TyNil       -> "nil"
+  | TyBoolean   -> "boolean"
+  | TyInt       -> "int"
+  | TyFloat     -> "float"
+  | TyString    -> "string"
+  | TyIntString -> "string"
+  | TyUserdata  -> "userdata"
+  | TyFunction  -> "function"
+  | TyThread    -> "thread"
+  | TyTable     -> "table"
+  | TyAny       -> "any"
 
 let get_essential_ty expr =
   match expr with

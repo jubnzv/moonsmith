@@ -28,6 +28,8 @@ type t = {
   c_use_ipairs: bool;
   (** Use tostring(). *)
   c_use_tostring: bool;
+  (** Use tonumber(). *)
+  c_use_tonumber: bool;
   (** Use string.upper(). *)
   c_use_string_upper: bool;
   (** Use string.lower(). *)

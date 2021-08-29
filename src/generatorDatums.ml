@@ -34,6 +34,7 @@ let gen_datum_value lhs =
       | TyInt -> IntExpr(Random.int_incl (-100) 100)
       | TyFloat -> FloatExpr(Random.float 100.0)
       | TyString -> let v = StringGen.gen_string () in StringExpr(v)
+      | TyIntString -> let v = StringGen.gen_int_string () in StringExpr(v)
       | TyTable   -> begin
           (* We are generating just empty tables here. They could be extended later. *)
           let table_ty = THashMap{ table_fields = [] } in

@@ -36,6 +36,8 @@ let gen_num_stmt ctx acc datum_stmt =
                            |> gen_numeric_assign_rhs
             | TyString  -> Transform.to_int ctx TyString lhs
                            |> gen_numeric_assign_rhs
+            | TyIntString -> Transform.to_int ctx TyIntString lhs
+                             |> gen_numeric_assign_rhs
             | TyTable   -> Transform.to_int ctx TyTable lhs
                            |> gen_numeric_assign_rhs
             | TyUserdata | TyThread | TyAny | TyFunction -> IntExpr(1)

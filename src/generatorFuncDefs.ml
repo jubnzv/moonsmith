@@ -10,12 +10,13 @@ let gen_return_exprs ctx env return_types =
            |> Option.value ~default:(GenUtil.gen_simple_expr ~ty:ty ())
   in
   let get_ty = function
-    | TyNil     -> aux TyBoolean
-    | TyTable   -> aux TyTable
-    | TyBoolean -> aux TyBoolean
-    | TyInt     -> aux TyInt
-    | TyFloat   -> aux TyFloat
-    | TyString  -> aux TyString
+    | TyNil       -> aux TyBoolean
+    | TyTable     -> aux TyTable
+    | TyBoolean   -> aux TyBoolean
+    | TyInt       -> aux TyInt
+    | TyFloat     -> aux TyFloat
+    | TyString    -> aux TyString
+    | TyIntString -> aux TyIntString
     | TyThread | TyUserdata | TyFunction | TyAny -> NilExpr
   in
   (* Function that returns doesn't have expr types is a routine. We don't

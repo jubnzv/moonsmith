@@ -22,3 +22,6 @@ let gen_string () =
   in
   let num_words = Random.int_incl 1 (len / 10) in
   aux [] num_words |> String.concat ~sep:" "
+
+let gen_int_string () =
+  string_of_int @@ Random.int_incl 1 10

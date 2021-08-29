@@ -2,18 +2,19 @@ open Core_kernel
 
 let gen_ty () =
   let open Ast in
-  match Random.int_incl 0 6 with
+  match Random.int_incl 0 7 with
   | 0 -> TyNil
   | 1 -> TyBoolean
   | 2 -> TyInt
   | 3 -> TyFloat
   | 4 -> TyString
-  | 5 -> TyFunction
+  | 5 -> TyIntString
+  | 6 -> TyFunction
   | _ -> TyTable
 
 let gen_simple_ty () =
   let open Ast in
-  Util.choose_one_exn [TyBoolean; TyInt; TyFloat; TyString]
+  Util.choose_one_exn [TyBoolean; TyInt; TyFloat; TyString; TyIntString]
 
 let gen_array_table_init () =
   let open Ast in
@@ -65,6 +66,7 @@ let gen_simple_expr ?(ty = Ast.TyAny) ?(always_positive = false) () =
     if always_positive then FloatExpr(Random.float 150.0)
     else FloatExpr(Random.float_range (-100.0) 100.0)
   | TyString  -> StringExpr(StringGen.gen_string ())
+  | TyIntString  -> StringExpr(StringGen.gen_int_string ())
   | TyTable -> gen_array_table_init ()
   | TyFunction -> begin
       let lambda_body =
@@ -105,7 +107,7 @@ let gen_compare_binop ty =
       | 5 -> OpGt
       | _ -> OpGte
     end
-  | TyNil | TyBoolean | TyString | TyUserdata
+  | TyNil | TyBoolean | TyString | TyIntString | TyUserdata
   | TyFunction | TyThread | TyTable | TyAny -> if Random.bool () then OpEq else OpNeq
 
 let gen_ident ?(add_now=false) ?(name=None) env =
@@ -184,6 +186,7 @@ let gen_init_stmt_for_ident ?(assign_local = false) expr =
       | TyInt -> IntExpr(Random.int_incl (-100) 100) |> gen_init_stmt
       | TyFloat -> FloatExpr(Random.float 100.0) |> gen_init_stmt
       | TyString -> StringExpr(StringGen.gen_string ()) |> gen_init_stmt
+      | TyIntString -> StringExpr(StringGen.gen_int_string ()) |> gen_init_stmt
       | TyFunction  -> begin
           let lambda_body =
             ReturnStmt{ return_exprs = [IntExpr(Random.int_incl (-100) (100))] }
@@ -268,11 +271,12 @@ let gen_combine_unop ty =
       | true -> Some(OpSub)  (* - *)
       | _ ->    Some(OpBNot) (* ~ *)
     end
-  | TyFloat    -> Some(OpSub)
-  | TyString   -> None
-  | TyFunction -> None
-  | TyTable    -> None
-  | TyAny      -> None
+  | TyFloat     -> Some(OpSub)
+  | TyString    -> None
+  | TyIntString -> None
+  | TyFunction  -> None
+  | TyTable     -> None
+  | TyAny       -> None
   | TyThread | TyUserdata -> None
 
 (** Generates name of the function which takes a single argument of type [ty]
@@ -304,9 +308,10 @@ let gen_combine_un_funcall ctx ty =
                  (true),
                  lazy (None)]
     @@ lazy (None)
-  | TyFunction -> None
-  | TyTable    -> None
-  | TyAny      -> None
+  | TyIntString -> None
+  | TyFunction  -> None
+  | TyTable     -> None
+  | TyAny       -> None
   | TyThread | TyUserdata -> None
 
 (** Generates binary operator which can take two expressions of type [ty] and
@@ -374,10 +379,11 @@ let gen_combine_binop ty lhs rhs =
         end
       | _ -> select_safe ()
     end
-  | TyString   -> None (* skip, because concat ('..') operators are horrible slow *)
-  | TyFunction -> None
-  | TyTable    -> None
-  | TyAny      -> None
+  | TyString    -> None (* skip, because concat ('..') operators are horrible slow *)
+  | TyIntString -> None (* skip, because concat ('..') operators are horrible slow *)
+  | TyFunction  -> None
+  | TyTable     -> None
+  | TyAny       -> None
   | TyThread | TyUserdata -> None
 
 (** Combines [exprs] of the same type [ty] to a single expression. *)
@@ -435,13 +441,14 @@ let rec combine ctx ty exprs =
 let combine_to_typed_expr ctx ty exprs =
   let open Ast in
   let type_conv = match ty with
-    | TyNil      -> Transform.to_nil
-    | TyBoolean  -> Transform.to_boolean
-    | TyInt      -> Transform.to_int
-    | TyFloat    -> Transform.to_float
-    | TyString   -> Transform.to_string
-    | TyFunction -> Transform.to_function
-    | TyTable    -> Transform.to_table
+    | TyNil       -> Transform.to_nil
+    | TyBoolean   -> Transform.to_boolean
+    | TyInt       -> Transform.to_int
+    | TyFloat     -> Transform.to_float
+    | TyString    -> Transform.to_string
+    | TyIntString -> Transform.to_int_string
+    | TyFunction  -> Transform.to_function
+    | TyTable     -> Transform.to_table
     | TyThread | TyUserdata | TyAny -> Transform.to_nil
   in
   List.fold_left

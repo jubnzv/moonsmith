@@ -16,6 +16,9 @@ val to_float : Context.t -> Ast.ty -> Ast.expr -> Ast.expr
 (** Converts given expression with its type to a new expression that results as [TyString].  *)
 val to_string : Context.t -> Ast.ty -> Ast.expr -> Ast.expr
 
+(** Converts given expression with its type to a new expression that results as [TyIntString].  *)
+val to_int_string : Context.t -> Ast.ty -> Ast.expr -> Ast.expr
+
 (** Converts given expression with its type to a new expression that results as [TyFunction].  *)
 val to_function : Context.t -> Ast.ty -> Ast.expr -> Ast.expr
 

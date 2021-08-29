@@ -4,6 +4,7 @@ type ty =
   | TyBoolean
   | TyInt
   | TyFloat
+  | TyIntString
   | TyString
   | TyUserdata
   | TyFunction
