@@ -86,9 +86,14 @@ let to_nil ctx ty expr =
       @@ lazy (fallback ())
     end
   | TyInt | TyFloat -> begin
-      (* TODO: Using 'nil and <numeric value>' always results as nil. *)
-      fallback ()
+      (* Using 'nil and <numeric value>' always results as nil. *)
+      Util.choose [(true),
+                   lazy (BinExpr{ bin_lhs = NilExpr;
+                                  bin_op = OpAnd;
+                                  bin_rhs = expr })]
+      @@ lazy (fallback ())
     end
+  | TyNil -> expr
   | _ -> fallback ()
 
 let to_boolean ctx ty expr =
@@ -118,7 +123,7 @@ let to_int ctx ty expr =
   | TyFloat     -> float_to_int ctx expr
   | TyString    -> string_to_int ctx expr
   | TyIntString -> int_string_to_int ctx expr
-  | TyFunction  -> fallback () (* TODO: Check return type *)
+  | TyFunction  -> fallback () (* TODO: Check return type and call, but prevent recursion. *)
   | TyTable     -> table_to_int ctx expr
   | TyThread | TyUserdata | TyAny -> fallback ()
 
@@ -191,23 +196,39 @@ let to_int_string ctx ty expr =
   | TyIntString -> expr
   | _ -> fallback ()
 
-let to_function ctx ty expr =
+let to_function _ _ expr =
   let open Ast in
   let fallback () =
     let lambda_body =
-      ReturnStmt{ return_exprs = [IntExpr(Random.int_incl (-100) (100))] }
+      ReturnStmt{ return_exprs = [expr] }
     in
     LambdaExpr{ lambda_args = [];
                 lambda_body }
   in
   fallback ()
 
-let to_table ctx ty expr =
+let to_table _ ty expr =
   let open Ast in
   let fallback () =
-    let dummy = IntExpr(42) in
+    let dummy = IntExpr(Random.int_incl (-10) 10) in
     TableExpr(TArray{ table_elements = [dummy] })
   in
   match ty with
   | TyTable -> expr
-  | _ -> fallback ()
+  | TyFloat | TyInt -> begin
+      (* Generate an array table. *)
+      Util.choose_lazy_exn [lazy (TableExpr(TArray{ table_elements = [expr] }));
+                            lazy (fallback ())]
+    end
+  | TyString | TyIntString | TyBoolean | TyNil -> begin
+      (* Generate a hashmap table. *)
+      Util.choose_lazy_exn [
+        lazy (let idx = Context.get_free_idx () in
+              TableExpr(THashMap{
+                  table_fields = [{ tf_key = IdentExpr{ id_id = idx;
+                                                        id_name = Printf.sprintf "t%d" idx;
+                                                        id_ty = ty};
+                                    tf_value = expr }] }));
+        lazy (fallback ())]
+    end
+  | TyThread | TyUserdata | TyAny | TyFunction -> fallback ()
