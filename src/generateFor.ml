@@ -73,9 +73,10 @@ let gen_for_names for_body =
   match for_body with
   | BlockStmt block -> begin
       let env = block.block_env in
-      match Random.int_incl 0 2 with
+      match Random.int_incl 0 3 with
       | 0 -> [(gen_var "i" TyInt env); gen_wildcard ()]
       | 1 -> [gen_wildcard (); (gen_var "v" TyAny env)]
+      | 2 -> [gen_wildcard (); gen_wildcard ()]
       | _ -> [(gen_var "i" TyInt env); (gen_var "v" TyAny env)]
     end
   | _ -> assert false
