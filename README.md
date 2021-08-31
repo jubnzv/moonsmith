@@ -249,10 +249,10 @@ You can simply call binary to get randomly-generated Lua program at `out.lua`:
 output/bin/moonsmith
 ```
 
-See output of the `--help` option to get the complete set of command-line options.
+The complete set of command-line options is available through `--help` option.
 
 To perform an evaluation of your tool, that works with Lua, it may be convenient to write a script that generates a random program and runs your tool over it to check output or return code. You can check an example of such script in the test suite: [run-test.py](./test/run-test.py)
 
 moonsmith also tries to use external module with utility functions written in Lua. By default they are stored in [lua/lib.lua](./lua/lib.lua). This is an optional feature, and you could disable it using `-n` command-line flag, or override some functionality, if you want.
 
-If you also need some complicated configuration, for example, you want to disable some Lua constructions which your tooling doesn't support yet, please check [config.ml](./src/config.ml) file. You can disable some options there and recompile the project to get results. These values intentionally weren't moved to the configuration file or CLI arguments, because not many (if any) users may want such subtle configuration.
+You can also provide some subtle configuration using a configuration file. By default, moonsmith looks it at `.moonsmith.json`, but you can set the specific file using `-c` command-line option. Using this file you can disable some Lua constructions which your tooling doesn't support yet. See the complete descriptions for configuration options in the [config.ml](./src/config.ml) file.

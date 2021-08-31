@@ -18,6 +18,13 @@ let () =
         "Location of the generated Lua file"
       ~placeholder:"OUTPUT"
       "out.lua"
+  and configpath =
+    Clap.default_string
+      ~short:'c'
+      ~description:
+        "Path to configuration file. If not set, the default options will be used."
+      ~placeholder:"CONFIGPATH"
+      "moonsmith.json"
   and libpath =
     Clap.default_string
       ~short:'I'
@@ -50,7 +57,14 @@ let () =
 
   Clap.close ();
 
-  let c = Config.mk_default () in
+  let c =
+    if Sys.file_exists configpath then
+      Yojson.Safe.from_file configpath
+      |> Config.of_yojson
+      |> Caml.Result.value ~default:(Config.mk_default ())
+    else
+      Config.mk_default ()
+  in
   let c = set_seed c seed in
   let c = { c with c_stdout = phys_equal stdout 1 } in
   let c =
