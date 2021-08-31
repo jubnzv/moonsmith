@@ -39,8 +39,10 @@ datum4 = 33
 --------------------------------------------------------
 -- @return float
 function datum2:m5()
-  local v22, v24, v26 = "et ullamco laborum", 62.085799, 26
-  local v28, v30, v32 = "laborum in", -4.860915e+01, "tempor quis"
+  local v22, v24, v26 = [[et
+ullamco
+laborum]], 62.085799, 26
+  local v28, v30, v32 = "laborum in", -48.609145, "tempor quis"
   v24 = 5.729946 - math.pi - -(math.pi)
   v22 = "anim"
   local cond35 = 9
@@ -54,7 +56,7 @@ function datum2:m5()
   repeat
       v22 = math.type(85)
       v22 = math.type(53)
-      cond37 = cond37 + 3
+      cond37 = cond37 + 0x3
   until cond37 <= 41
   return math.pi - -(math.cos(v24))
 end
@@ -69,9 +71,9 @@ function func6(a0, a1, a2, a3, a4)
   v39, v41 = -97.502688, "2"
   local v43, v45, v47, v49 = "nisi", -77, a2, a1
   v51, v53 = datum4, a1
-  for i, _ in ipairs(datum3) do
+  for _, v in ipairs(datum3) do
       a2 = a4
-      v39 = math.pi - -(7.274771e+01)
+      v39 = math.pi - -(72.747706)
   end
   v43 = math.type(-78)
   for i, _ in ipairs(datum1) do
@@ -80,12 +82,14 @@ function func6(a0, a1, a2, a3, a4)
   if a3 ~= 44 then
       a3 = -50 + ~ -78
       a0 = 80.030963 - 2.273377 - -(math.cos(9))
-      a3 = 94 + ~ string.len("nulla")
+      a3 = 94 + ~ string.len([[nulla]])
   else
       a3 = -61 - ~ #(a2)
       a4 = math.type(a3)
   end
-  return false ~= a1 == "adipiscing nostrud" == a2 ~= math.ult(a3, 0x4) ~= "et nisi dolore" ~= a4 == true == "nostrud exercitation cillum" == v41 == not "in do reprehenderit pariatur" ~= v43
+  return false ~= a1 == "adipiscing nostrud" == a2 ~= math.ult(a3, 4) ~= [[et
+nisi
+dolore]] ~= a4 == true == "nostrud exercitation cillum" == v41 == not "in do reprehenderit pariatur" ~= v43
 end
 
 -- @param a0 string
@@ -93,8 +97,10 @@ end
 local func12 = function (a0)
   v62, v64, v66 = false, "1", [[2]]
   v68, v70, v72, v74 = a0, datum4, v62, "veniam dolore"
-  v76, v78, v80 = "nostrud qui consequat", "proident aliquip Ut", "9"
-  if v64 ~= [[3]] then
+  v76, v78, v80 = "nostrud qui consequat", [[proident
+aliquip
+Ut]], "9"
+  if v64 ~= "3" then
       v62 = math.ult(-98, -6) == not true ~= false
       a0 = v64
       a0 = tostring(-73)
@@ -104,7 +110,7 @@ local func12 = function (a0)
   end
   v66 = "1"
   a0 = v64
-  if a0 ~= [[4]] then
+  if a0 ~= "4" then
       v62 = false ~= "quis nisi nisi" == a0 ~= not math.ult(-11, 12)
       v62 = false ~= not "ut" ~= "esse proident in"
       v62 = false == false == not false == v62
@@ -117,7 +123,7 @@ local func12 = function (a0)
       a0 = "2"
   else
       v64 = v66
-      v62 = math.ult(-4, 11) == "proident in fugiat laborum" == v64 ~= not math.ult(-37, 5)
+      v62 = math.ult(-4, 11) == "proident in fugiat laborum" == v64 ~= not math.ult(-37, 0x5)
   end
   return a0
 end
@@ -128,10 +134,10 @@ end
 -- @param a3 boolean
 -- @return float
 local func14 = function (a0, a1, a2, a3)
-  local v82, v84 = -9.370991e+01, 78.054212
-  local v86, v88, v90 = "9", "8", true
+  local v82, v84 = -93.709911, 78.054212
+  local v86, v88, v90 = [[9]], "8", true
   if datum3 == {} then
-      v84 = 4.922527e+01 + -(math.cos(113.449562))
+      v84 = 49.225268 + -(math.cos(113.449562))
       a2 = true == a3 == not true == true
       v82 = 7.013714 + math.pi - -(math.pi)
   else
@@ -139,72 +145,77 @@ local func14 = function (a0, a1, a2, a3)
       a2 = false == a3 ~= not false ~= true
   end
   v82 = math.sin(v84) + math.pi + -(math.cos(0.302638))
-  for i, v in ipairs(datum1) do
+  for _, v in ipairs(datum1) do
       a1 = "8"
   end
-  local cond95 = false
+  local cond94 = false
   repeat
-      a0 = math.type(33)
+      a0 = math.type(0x21)
       a0 = "consequat in elit"
-      cond95 = true
-  until cond95 ~= false
-  return math.pi + 0x1.fd917296808bfp+5 - 13.263112 + 6.430664e+00 - math.cos(v82) + -(math.sin(v84))
+      cond94 = true
+  until cond94 ~= false
+  return math.pi + 63.696019 - 13.263112 + 0x1.9b9000b262431p+2 - math.cos(v82) + -(math.sin(v84))
 end
 
 -- @param a0 float
 -- @param a1 string
 -- @return nil
 local func19 = function (a0, a1)
-  v97, v99, v101, v103 = -39.158628, -15, "4", a0
-  v105, v107, v109, v111 = "4", "qui proident", "9", "7"
-  v97 = math.sin(v97) + math.pi + -(17.112416)
+  v96, v98, v100, v102 = -39.158628, -15, "4", a0
+  v104, v106, v108, v110 = "4", "qui proident", "9", "7"
+  v96 = math.sin(v96) + math.pi + -(17.112416)
   if a0 == -29.895999 then
       a1 = "nulla quis"
-      v99 = math.floor(v97) & ~ -17
+      v98 = math.floor(v96) & ~ -17
   else
-      v97 = math.pi + -(35.132890)
+      v96 = math.pi + -(35.132890)
   end
-  v99 = math.floor(a0) ~ -54 + ~ 55
-  v97 = math.pi - -(math.pi)
-  for i=0,14,2 do
-      v97 = math.sin(v97) + -(math.sin(51.779741))
-      v99 = -38 ~ -(string.len("cillum"))
+  v98 = math.floor(a0) ~ -54 + ~ 55
+  v96 = math.pi - -(math.pi)
+  for i=0,0xe,2 do
+      v96 = math.sin(v96) + -(math.sin(51.779741))
+      v98 = -38 ~ -(string.len("cillum"))
   end
-  return false ~= "aute fugiat veniam nostrud" ~= a1 == false == not math.ult(v99, 0xD)
+  return false ~= "aute fugiat veniam nostrud" ~= a1 == false == not math.ult(v98, 0xd)
 end
 
 --------------------------------------------------------
 -- Calling functions                                  --
 --------------------------------------------------------
-datum2:m5()
-arg113_a0 = 41.181777
-arg115_a1 = true
-arg117_a2 = [[sed
-in
-in]]
-arg119_a3 = -31
-arg121_a4 = "voluptate sed laborum ea"
-func6(arg113_a0, arg115_a1, arg117_a2, arg119_a3, arg121_a4)
-arg124_a0 = "9"
-func12(arg124_a0)
-arg127_a0 = "officia dolor"
-arg129_a1 = "1"
-arg131_a2 = true
-arg133_a3 = true
-func14(arg127_a0, arg129_a1, arg131_a2, arg133_a3)
-arg136_a0 = 95.503889
-arg138_a1 = "eu consequat esse"
-func19(arg136_a0, arg138_a1)
+local r_m5_0 = datum2:m5()
+local func6_a0 = 41.181777
+local func6_a1 = true
+local func6_a2 = "sed in in"
+local func6_a3 = -31
+local func6_a4 = "voluptate sed laborum ea"
+local r_func6_0 = func6(func6_a0, func6_a1, func6_a2, func6_a3, func6_a4)
+local func12_a0 = "9"
+local r_func12_0 = func12(func12_a0)
+local func14_a0 = "officia dolor"
+local func14_a1 = [[1]]
+local func14_a2 = true
+local func14_a3 = true
+local r_func14_0 = func14(func14_a0, func14_a1, func14_a2, func14_a3)
+local func19_a0 = 95.503889
+local func19_a1 = [[eu
+consequat
+esse]]
+local r_func19_0 = func19(func19_a0, func19_a1)
 
 --------------------------------------------------------
 -- Combining and printing result                      --
 --------------------------------------------------------
-r_datum0 = ms.table_to_int(datum0)
-r_datum1 = ms.table_to_int(datum1)
-r_datum2 = ms.table_to_int(datum2)
-r_datum3 = #(datum3)
-r_datum4 = datum4
-RESULT = r_datum4 - r_datum3 << r_datum2 ~ r_datum1 ~ r_datum0
+local res_datum0 = ms.table_to_int(datum0)
+local res_datum1 = #(datum1)
+local res_datum2 = ms.table_to_int(datum2)
+local res_datum3 = #(datum3)
+local res_datum4 = datum4
+local res_r_m5_0 = math.floor(r_m5_0)
+local res_r_func6_0 = 1
+local res_r_func12_0 = math.floor(r_func12_0 + 1)
+local res_r_func14_0 = math.floor(r_func14_0)
+local res_r_func19_0 = 1
+RESULT = res_r_func19_0 + res_r_func14_0 - res_r_func12_0 + res_r_func6_0 + res_r_m5_0 - res_datum4 + res_datum3 - res_datum2 - res_datum1 + res_datum0
 print(RESULT)
 ```
 

@@ -8,12 +8,13 @@ let gen_fcall_from_fdef stmt =
   | FuncDefStmt fd -> begin
       let gen_varags () =
         let rec aux acc num =
-          if num > List.length acc then
+          let len = List.length acc in
+          if num > len then
             let idx = Context.get_free_idx ()
             and id_ty = Util.choose_one_exn [TyInt; TyFloat; TyBoolean; TyString]
             in
             let varg = IdentExpr{ id_id = idx;
-                                  id_name = Printf.sprintf "vararg%d" idx;
+                                  id_name = Printf.sprintf "vararg%d" len;
                                   id_ty }
             in
             aux (acc @ [varg]) num
@@ -32,14 +33,12 @@ let gen_fcall_from_fdef stmt =
           ~f:(fun acc expr -> begin
                 match expr with
                 | IdentExpr id -> begin
-                    let new_name = Printf.sprintf "arg%d_%s"
-                        (Context.get_free_idx ())
-                        id.id_name
-                    in
-                    let new_ident = IdentExpr{ id_id = Context.get_free_idx ();
+                    let idx = (Context.get_free_idx ()) in
+                    let new_name = Printf.sprintf "%s_%s" fd.fd_name id.id_name in
+                    let new_ident = IdentExpr{ id_id = idx;
                                                id_name = new_name;
                                                id_ty = id.id_ty } in
-                    let init = GenUtil.gen_init_stmt_for_ident new_ident in
+                    let init = GenUtil.gen_init_stmt_for_ident ~assign_local:true new_ident in
                     acc @ [(new_ident, init)]
                   end
                 | _ -> assert false
@@ -58,12 +57,24 @@ let gen_fcall_from_fdef stmt =
             FCFunc{ fcf_func }
           end
       in
-      (* Generate final expression. *)
-      let fc_expr = FuncCallExpr{ fc_id = fd.fd_id;
-                                  fc_ty;
-                                  fc_args }
+      (* Assign result to variables. *)
+      let results = List.fold_left
+          fd.fd_ty
+          ~init:[]
+          ~f:(fun acc ty -> begin
+                let idx = Context.get_free_idx ()
+                and len = List.length acc in
+                acc @ [IdentExpr{ id_id = idx;
+                                  id_name = Printf.sprintf "r_%s_%d" fd.fd_name len;
+                                  id_ty = ty }]
+              end)
       in
-      fcf_init_stmts @ [ FuncCallStmt{ fc_expr } ]
+      (* Generate call expression. *)
+      fcf_init_stmts @ [AssignStmt{ assign_local = true;
+                                    assign_lhs = results;
+                                    assign_rhs = [FuncCallExpr{ fc_id = fd.fd_id;
+                                                                fc_ty;
+                                                                fc_args }]}]
     end
   | _ -> assert false
 
