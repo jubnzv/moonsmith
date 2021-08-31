@@ -132,7 +132,7 @@ let gen_combine_stmt num_stmts =
               assign_rhs = [rhs]; }
 
 (** Generates a print statement for the combined result. *)
-let gen_print_stmt combine_stmt =
+let gen_print_stmt ctx combine_stmt =
   let open Ast in
   let result_id = match combine_stmt with
     | AssignStmt assign -> begin
@@ -142,7 +142,7 @@ let gen_print_stmt combine_stmt =
       end
     | _ -> assert false
   in
-  FuncCallStmt{ fc_expr = StdLib.mk_funccall "print" [result_id] }
+  FuncCallStmt{ fc_expr = StdLib.mk_funccall "print" [ Transform.to_int ctx TyFloat result_id ] }
 
 let generate (ctx : Context.t) =
   let open Context in
@@ -159,5 +159,5 @@ let generate (ctx : Context.t) =
   in
   let result_stmts = datum_stmts @ func_results_stmts in
   let combine_stmt = gen_combine_stmt result_stmts in
-  let print_stmt = gen_print_stmt combine_stmt in
+  let print_stmt = gen_print_stmt ctx combine_stmt in
   { ctx with ctx_result_stmts = result_stmts @ [combine_stmt; print_stmt] }
