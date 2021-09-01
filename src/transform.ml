@@ -173,7 +173,11 @@ let to_float ctx ty expr =
       Util.choose [(ctx.ctx_config.c_use_math_sin,
                     lazy (StdLib.mk_funccall "math.sin" [expr]));
                    (ctx.ctx_config.c_use_math_cos,
-                    lazy (StdLib.mk_funccall "math.cos" [expr]))
+                    lazy (StdLib.mk_funccall "math.cos" [expr]));
+                   (ctx.ctx_config.c_use_math_tan,
+                    lazy (StdLib.mk_funccall "math.tan" [expr]));
+                   (ctx.ctx_config.c_use_math_abs,
+                    lazy (StdLib.mk_funccall "math.abs" [expr]));
                   ]
       @@ lazy (fallback ())
     end

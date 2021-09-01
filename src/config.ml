@@ -74,6 +74,12 @@ type t = {
   c_use_math_cos: bool [@key "use_math_cos"];
   (** Use math.cos() *)
 
+  c_use_math_tan: bool [@key "use_math_tan"];
+  (** Use math.tan() *)
+
+  c_use_math_abs: bool [@key "use_math_abs"];
+  (** Use math.abs() *)
+
   c_use_math_pi: bool [@key "use_math_pi"];
   (** Use math.pi *)
 
@@ -109,6 +115,8 @@ let mk_default () =
     c_use_math_ult = true;
     c_use_math_sin = true;
     c_use_math_cos = true;
+    c_use_math_tan = true;
+    c_use_math_abs = true;
     c_use_math_pi = true;
     c_use_math_log = true;
     c_use_math_floor = true; }

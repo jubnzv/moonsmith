@@ -23,6 +23,8 @@
     "use_math_ult": true,
     "use_math_sin": true,
     "use_math_cos": true,
+    "use_math_tan": true,
+    "use_math_abs": true,
     "use_math_pi": true,
     "use_math_log": true,
     "use_math_floor": true

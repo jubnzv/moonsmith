@@ -74,6 +74,12 @@ type t = {
   c_use_math_cos: bool [@key "use_math_cos"];
   (** Use math.cos() *)
 
+  c_use_math_tan: bool [@key "use_math_tan"];
+  (** Use math.tan() *)
+
+  c_use_math_abs: bool [@key "use_math_abs"];
+  (** Use math.abs() *)
+
   c_use_math_pi: bool [@key "use_math_pi"];
   (** Use math.pi *)
 

@@ -65,7 +65,7 @@ laborum]], 62.085799, 26
   local cond35 = 9
   repeat
       v24 = math.cos(v24) - 56.973951 - -(math.pi)
-      v24 = math.cos(v24) - 73.589347 - -(math.cos(v24))
+      v24 = math.abs(v24) - 73.589347 - -(math.abs(v24))
       cond35 = cond35 + 3
   until cond35 <= 45
   v22 = "minim culpa eiusmod"
@@ -98,7 +98,7 @@ function func6(a0, a1, a2, a3, a4)
   end
   if a3 ~= 44 then
       a3 = -50 + ~ -78
-      a0 = 80.030963 - 2.273377 - -(math.cos(9))
+      a0 = 80.030963 - 2.273377 - -(math.abs(9))
       a3 = 94 + ~ string.len([[nulla]])
   else
       a3 = -61 - ~ #(a2)
@@ -154,14 +154,14 @@ local func14 = function (a0, a1, a2, a3)
   local v82, v84 = -93.709911, 78.054212
   local v86, v88, v90 = [[9]], "8", true
   if datum3 == {} then
-      v84 = 49.225268 + -(math.cos(113.449562))
+      v84 = 49.225268 + -(math.abs(113.449562))
       a2 = true == a3 == not true == true
       v82 = 7.013714 + math.pi - -(math.pi)
   else
       v82 = 6.035996 + math.sin(v84) - -(math.pi)
       a2 = false == a3 ~= not false ~= true
   end
-  v82 = math.sin(v84) + math.pi + -(math.cos(0.302638))
+  v82 = math.sin(v84) + math.pi + -(math.abs(0.302638))
   for _, v in ipairs(datum1) do
       a1 = "8"
   end
@@ -171,7 +171,7 @@ local func14 = function (a0, a1, a2, a3)
       a0 = "consequat in elit"
       cond94 = true
   until cond94 ~= false
-  return math.pi + 63.696019 - 13.263112 + 0x1.9b9000b262431p+2 - math.cos(v82) + -(math.sin(v84))
+  return math.pi + 63.696019 - 13.263112 + 0x1.9b9000b262431p+2 - math.abs(v82) + -(math.sin(v84))
 end
 
 -- @param a0 float
@@ -180,7 +180,7 @@ end
 local func19 = function (a0, a1)
   v96, v98, v100, v102 = -39.158628, -15, "4", a0
   v104, v106, v108, v110 = "4", "qui proident", "9", "7"
-  v96 = math.sin(v96) + math.pi + -(17.112416)
+  v96 = math.tan(v96) + math.pi + -(17.112416)
   if a0 == -29.895999 then
       a1 = "nulla quis"
       v98 = math.floor(v96) & ~ -17
@@ -190,7 +190,7 @@ local func19 = function (a0, a1)
   v98 = math.floor(a0) ~ -54 + ~ 55
   v96 = math.pi - -(math.pi)
   for i=0,0xe,2 do
-      v96 = math.sin(v96) + -(math.sin(51.779741))
+      v96 = math.tan(v96) + -(math.tan(51.779741))
       v98 = -38 ~ -(string.len("cillum"))
   end
   return false ~= "aute fugiat veniam nostrud" ~= a1 == false == not math.ult(v98, 0xd)
