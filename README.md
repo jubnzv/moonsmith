@@ -247,7 +247,7 @@ Install the latest OCaml compiler and opam. Consider installation instructions a
 The simplest way to install the tool is to download it from opam:
 
 ```
-opam install moosmith
+opam install moonsmith
 ```
 
 Otherwise you should build it from sources. Clone the repository and install required dependencies:
