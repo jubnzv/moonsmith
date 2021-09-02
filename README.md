@@ -1,5 +1,7 @@
 # moonsmith
 
+![](https://github.com/jubnzv/moonsmith/workflows/Build/badge.svg)
+
 moonsmith is a generator of random Lua 5.3 programs.
 
 This tool could be used to evaluate tooling that works with Lua: parsers, transpilers, code analyzers, etc.
@@ -8,7 +10,7 @@ This tool could be used to evaluate tooling that works with Lua: parsers, transp
 
 moonsmith generates a syntactically and semantically correct Lua program, which always successfully terminates in a short time.
 
-The core idea behind the algorithm of generated programs is to generate some global data and a few functions and methods, which mutate it. At the end of top-level the generated program calls all generated functions and combines results to a single integer. Then it prints this integer to the stdout.
+The core idea behind the algorithm of generated programs is to generate some global data and a few functions and methods, which mutate it. At the end of top-level a generated program calls all functions and combines results to a single integer. Then it prints this integer to the stdout.
 
 Here is an example of randomly generated program:
 
@@ -268,6 +270,6 @@ output/bin/moonsmith
 
 The complete set of command-line options is available through `--help` option.
 
-To perform an evaluation of your tool, that works with Lua, it may be convenient to write a script that generates a random program and runs your tool over it to check output or return code. You can check an example of such script in the test suite: [run-test.py](./test/run-test.py)
+To perform evaluation of your tool that works with Lua, it may be convenient to write a script that generates a random program and runs your tool over it to check output or return code. You can check an example of such script in the test suite: [run-test.py](./test/run-test.py).
 
 You can also provide some subtle configuration using a configuration file. By default, moonsmith looks it at `moonsmith.json`, but you can set the specific file using `-c` command-line option. Using this file you can disable some Lua constructions which your tooling doesn't support yet. See the complete descriptions for configuration options in the [config.ml](./src/config.ml) file.
