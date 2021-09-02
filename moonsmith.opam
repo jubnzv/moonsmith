@@ -6,7 +6,7 @@ description:
   "This tool can be used to evaluate tooling that works with Lua: parsers, transpilers, code analyzers, etc."
 maintainer: ["Georgiy Komarov <jubnzv@gmail.com>"]
 authors: ["Georgiy Komarov"]
-license: "LGPL3"
+license: "LGPL-3.0-or-later"
 homepage: "https://github.com/jubnzv/moonsmith"
 bug-reports: "https://github.com/jubnzv/moonsmith/issues"
 depends: [

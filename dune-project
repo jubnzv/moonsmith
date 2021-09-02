@@ -6,7 +6,7 @@
 (name moonsmith)
 (version 0.1.0)
 (authors "Georgiy Komarov")
-(license LGPL3)
+(license LGPL-3.0-or-later)
 (source (github jubnzv/moonsmith))
 (maintainers "Georgiy Komarov <jubnzv@gmail.com>")
 
