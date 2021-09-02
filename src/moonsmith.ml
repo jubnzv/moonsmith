@@ -1,5 +1,16 @@
 open Core_kernel
 
+(** Creates default path to Lua library using information about distribution
+    installation paths. *)
+let sanitize_libpath libpath =
+  if Sys.file_exists libpath then Some(libpath)
+  else
+    let opam_path = Printf.sprintf "%s/../share/moonsmith/%s"
+        (Filename.dirname @@ FileUtil.which Sys.argv.(0))
+        libpath in
+    if Sys.file_exists opam_path then Some(opam_path)
+    else None
+
 let set_seed c s =
   match int_of_string_opt s with
   | Some i -> begin
@@ -68,10 +79,8 @@ let () =
   let c = set_seed c seed in
   let c = { c with c_stdout = phys_equal stdout 1 } in
   let c =
-    if phys_equal nolib 1 || not @@ Sys.file_exists libpath then
-      { c with c_lib_path = None }
-    else
-      { c with c_lib_path = Some(libpath) }
+    if not @@ phys_equal nolib 1 then { c with c_lib_path = sanitize_libpath libpath }
+    else { c with c_lib_path = None }
   in
   let program = Generate.generate c in
   let oc = Out_channel.create out in

@@ -1,6 +1,6 @@
 (executable
  (public_name moonsmith)
- (libraries core_kernel clap)
+ (libraries core_kernel clap fileutils)
  ; Enable for debugging:
  ; (modes byte)
  (preprocess
@@ -13,3 +13,8 @@
    (:standard -warn-error -A)))
  (release
   (ocamlopt_flags :standard -ccopt -static)))
+
+(install
+ (package moonsmith)
+ (section share)
+ (files (../lua/lib.lua as lua/lib.lua)))

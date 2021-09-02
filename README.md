@@ -4,7 +4,7 @@
 
 moonsmith is a generator of random Lua 5.3 programs.
 
-This tool could be used to evaluate tooling that works with Lua: parsers, transpilers, code analyzers, etc.
+This tool can be used to evaluate tooling that works with Lua: parsers, transpilers, code analyzers, etc.
 
 ## Description
 
@@ -244,21 +244,27 @@ print(math.floor(RESULT))
 
 Install the latest OCaml compiler and opam. Consider installation instructions at [ocaml.org](https://ocaml.org/docs/install.html) and [opam.ocaml.org](https://opam.ocaml.org/doc/Install.html).
 
-Then install required dependencies:
+The simplest way to install the tool is to download it from opam:
+
+```
+opam install moosmith
+```
+
+Otherwise you should build it from sources. Clone the repository and install required dependencies:
 
 ```bash
+git clone https://github.com/jubnzv/moonsmith.git
+cd moonsmith
 opam install --deps-only .    # first time only
 ```
 
-Build and install `moonsmith` binary to the `output` directory:
+Then build and install `moonsmith` binary:
 
 ```bash
-dune build @install
-mkdir output
-dune install --prefix ./output
+opam install .
 ```
 
-You'll get compiled binary at `output/bin/moonsmith`.
+You'll get a compiled binary at `~/.opam/default/bin/moonsmith`.
 
 ## Usage
 

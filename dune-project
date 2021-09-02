@@ -4,7 +4,7 @@
 (generate_opam_files true)
 
 (name moonsmith)
-(version 0.0.1)
+(version 0.1.0)
 (authors "Georgiy Komarov")
 (license LGPL3)
 (source (github jubnzv/moonsmith))
@@ -12,4 +12,14 @@
 
 (package
   (name moonsmith)
-  (synopsis "Random generator of Lua programs."))
+  (synopsis "Random generator of Lua programs")
+  (description "This tool can be used to evaluate tooling that works with Lua: parsers, transpilers, code analyzers, etc.")
+  (depends
+      (ocaml (>= 4.08))
+      (fileutils :build)
+      (core_kernel :build)
+      (clap :build)
+      (ppxlib :build)
+      (ppx_deriving :build)
+      (ppx_deriving_yojson :build)
+      (yojson :build)))

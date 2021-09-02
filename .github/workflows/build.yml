@@ -22,7 +22,7 @@ jobs:
         ocaml-version: ${{ matrix.ocaml-version }}
     - name: Build
       run: |
-        opam install -y dune core_kernel clap ppx_deriving ppx_deriving_yojson ppxlib yojson
+        opam install -y dune core_kernel clap ppx_deriving ppx_deriving_yojson ppxlib yojson fileutils
         eval $(opam env)
         dune build @install
         mkdir -p output
