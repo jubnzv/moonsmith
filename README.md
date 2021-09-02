@@ -23,7 +23,24 @@ Here is an example of randomly generated program:
 -- Seed:                   42                         --
 --------------------------------------------------------
 
-local ms = require('lua/lib')
+--------------------------------------------------------
+-- Utility functions.                                 --
+--------------------------------------------------------
+ms = {}
+
+-- Generates a random integer for an arbitrary table.
+-- @param t table
+function ms.table_to_int(t)
+  acc = 0
+  for i, v in ipairs(t) do
+    if type(v) == "number" then
+      acc = acc + v
+    else
+      acc = acc & i
+    end
+  end
+  return acc + #t
+end
 
 --------------------------------------------------------
 -- Global datums definitions (  5 statements)         --
@@ -216,7 +233,7 @@ local res_r_func12_0 = math.floor(r_func12_0 + 1)
 local res_r_func14_0 = math.floor(r_func14_0)
 local res_r_func19_0 = 1
 RESULT = res_r_func19_0 + res_r_func14_0 - res_r_func12_0 + res_r_func6_0 + res_r_m5_0 - res_datum4 + res_datum3 - res_datum2 - res_datum1 + res_datum0
-print(RESULT)
+print(math.floor(RESULT))
 ```
 
 </details>
@@ -253,6 +270,4 @@ The complete set of command-line options is available through `--help` option.
 
 To perform an evaluation of your tool, that works with Lua, it may be convenient to write a script that generates a random program and runs your tool over it to check output or return code. You can check an example of such script in the test suite: [run-test.py](./test/run-test.py)
 
-moonsmith also tries to use external module with utility functions written in Lua. By default they are stored in [lua/lib.lua](./lua/lib.lua). This is an optional feature, and you could disable it using `-n` command-line flag, or override some functionality, if you want.
-
-You can also provide some subtle configuration using a configuration file. By default, moonsmith looks it at `.moonsmith.json`, but you can set the specific file using `-c` command-line option. Using this file you can disable some Lua constructions which your tooling doesn't support yet. See the complete descriptions for configuration options in the [config.ml](./src/config.ml) file.
+You can also provide some subtle configuration using a configuration file. By default, moonsmith looks it at `moonsmith.json`, but you can set the specific file using `-c` command-line option. Using this file you can disable some Lua constructions which your tooling doesn't support yet. See the complete descriptions for configuration options in the [config.ml](./src/config.ml) file.

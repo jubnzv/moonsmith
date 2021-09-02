@@ -3,12 +3,7 @@ open Core_kernel
 
 let get_imports_code ctx =
   match ctx.Context.ctx_config.Config.c_lib_path with
-  | Some(p) ->
-    let p = if String.length p > 4 && Util.endswith p ".lua" then
-        String.sub p ~pos:(0) ~len:((String.length p) - 4)
-      else p
-    in
-    Printf.sprintf "local ms = require('%s')\n" p
+  | Some p -> In_channel.read_all p
   | None -> ""
 
 (** Converts all statement in the [ctx] to Lua code. *)
