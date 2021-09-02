@@ -244,27 +244,24 @@ print(math.floor(RESULT))
 
 Install the latest OCaml compiler and opam. Consider installation instructions at [ocaml.org](https://ocaml.org/docs/install.html) and [opam.ocaml.org](https://opam.ocaml.org/doc/Install.html).
 
-The simplest way to install the tool is to download it from opam:
-
-```
-opam install moonsmith
-```
+The simplest way to install the tool is to download it from the [releases page](https://github.com/jubnzv/moonsmith/releases).
 
 Otherwise you should build it from sources. Clone the repository and install required dependencies:
 
 ```bash
 git clone https://github.com/jubnzv/moonsmith.git
 cd moonsmith
-opam install --deps-only .    # first time only
+opam install .    # first time only
 ```
 
 Then build and install `moonsmith` binary:
 
 ```bash
-opam install .
+dune build --profile release
+dune install --prefix output
 ```
 
-You'll get a compiled binary at `~/.opam/default/bin/moonsmith`.
+You'll get a statically linked binary at `output/bin/moonsmith`.
 
 ## Usage
 
