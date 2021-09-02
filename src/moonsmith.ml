@@ -68,8 +68,10 @@ let () =
   let c = set_seed c seed in
   let c = { c with c_stdout = phys_equal stdout 1 } in
   let c =
-    if phys_equal nolib 1 then { c with c_lib_path = None }
-    else { c with c_lib_path = Some(libpath) }
+    if phys_equal nolib 1 || not @@ Sys.file_exists libpath then
+      { c with c_lib_path = None }
+    else
+      { c with c_lib_path = Some(libpath) }
   in
   let program = Generate.generate c in
   let oc = Out_channel.create out in
