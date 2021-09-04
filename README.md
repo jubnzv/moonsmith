@@ -251,7 +251,7 @@ Otherwise you should build it from sources. Clone the repository and install req
 ```bash
 git clone https://github.com/jubnzv/moonsmith.git
 cd moonsmith
-opam install .    # first time only
+opam install --deps-only .    # first time only
 ```
 
 Then build and install `moonsmith` binary:
@@ -275,4 +275,4 @@ The complete set of command-line options is available through `--help` option.
 
 To perform evaluation of your tool that works with Lua, it may be convenient to write a script that generates a random program and runs your tool over it to check output or return code. You can check an example of such script in the test suite: [run-test.py](./test/run-test.py).
 
-You can also provide some subtle configuration using a configuration file. By default, moonsmith looks it at `moonsmith.json`, but you can set the specific file using `-c` command-line option. Using this file you can disable some Lua constructions which your tooling doesn't support yet. See the complete descriptions for configuration options in the [config.ml](./src/config.ml) file.
+You can also provide some subtle configuration using a configuration file. By default, moonsmith looks it at `moonsmith.json`, but you can set the specific file using `-c` command-line option. Using this file you can disable some Lua constructions which your tooling doesn't support yet. See the example config at [moonsmith.json](./moonsmith.json) and the complete description of configuration options in the [config.ml](./src/config.ml) file.
