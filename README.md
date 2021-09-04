@@ -242,11 +242,13 @@ print(math.floor(RESULT))
 
 ## Installation
 
-Install the latest OCaml compiler and opam. Consider installation instructions at [ocaml.org](https://ocaml.org/docs/install.html) and [opam.ocaml.org](https://opam.ocaml.org/doc/Install.html).
-
 The simplest way to install the tool is to download it from the [releases page](https://github.com/jubnzv/moonsmith/releases).
 
-Otherwise you should build it from sources. Clone the repository and install required dependencies:
+Otherwise you should build it from sources.
+
+Install the latest OCaml compiler and opam. Consider installation instructions at [ocaml.org](https://ocaml.org/docs/install.html) and [opam.ocaml.org](https://opam.ocaml.org/doc/Install.html).
+
+Then clone the repository and install required dependencies:
 
 ```bash
 git clone https://github.com/jubnzv/moonsmith.git
