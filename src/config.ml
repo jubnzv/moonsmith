@@ -59,6 +59,9 @@ type t = {
   c_use_string_reverse: bool [@key "use_string_reverse"];
   (** Use string.reverse(). *)
 
+  c_use_string_gsub: bool [@key "use_string_gsub"];
+  (** Use string.gsub(). *)
+
   c_use_string_len: bool [@key "use_string_len"];
   (** Use string.len(). *)
 
@@ -110,6 +113,7 @@ let mk_default () =
     c_use_string_lower = true;
     c_use_string_sub = true;
     c_use_string_reverse = true;
+    c_use_string_gsub = true;
     c_use_string_len = true;
     c_use_math_type = true;
     c_use_math_ult = true;

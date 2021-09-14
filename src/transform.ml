@@ -202,9 +202,13 @@ let to_string ctx ty expr =
       if Random.bool () then fallback () else expr
     end
   | TyString -> begin
-      (* string.reverse is horrible slow. Reduce it calls as much as possible. *)
+      (* Functions from the `string` module are horrible slow. Reduce their calls as much as possible. *)
       Util.choose [(ctx.ctx_config.c_use_string_reverse && phys_equal 0 @@ Random.int_incl 0 100,
                     lazy (StdLib.mk_funccall "string.reverse" [expr]));
+                   (ctx.ctx_config.c_use_string_gsub && phys_equal 0 @@ Random.int_incl 0 100,
+                    lazy (StdLib.mk_funccall "string.gsub" [expr;
+                                                            Ast.StringExpr(StringGen.gen_regexp_string ());
+                                                            Ast.StringExpr("")]));
                    (true,
                     lazy (expr))]
       @@ lazy (fallback ())

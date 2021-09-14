@@ -25,3 +25,23 @@ let gen_string () =
 
 let gen_int_string () =
   string_of_int @@ Random.int_incl 1 10
+
+(* See:https://www.lua.org/pil/20.2.html *)
+let regex_letters = [ "a"; "c"; "d"; "l"; "p"; "s"; "u"; "w"; "x"; "z" ]
+and regex_modifiers = [ "+"; "*"; "-"; "?" ]
+
+let gen_regexp_string () =
+  let patterns_num = Random.int_incl 1 3 in
+  let rec aux acc =
+    if patterns_num > List.length acc then
+      let regexp =
+        [ "%";
+          Util.choose_one_exn regex_letters;
+          match Random.bool () with
+          | true  -> Util.choose_one_exn regex_modifiers
+          | false -> "" ]
+        |> String.concat ~sep:""
+      in aux (acc @ [regexp])
+    else acc
+  in
+  aux [] |> String.concat ~sep:""

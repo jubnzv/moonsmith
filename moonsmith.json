@@ -18,6 +18,7 @@
     "use_string_lower": true,
     "use_string_sub": true,
     "use_string_reverse": true,
+    "use_string_gsub": true,
     "use_string_len": true,
     "use_math_type": true,
     "use_math_ult": true,

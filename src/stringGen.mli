@@ -4,3 +4,5 @@
 val gen_string : unit -> string
 
 val gen_int_string : unit -> string
+
+val gen_regexp_string : unit -> string

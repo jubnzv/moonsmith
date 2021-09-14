@@ -59,6 +59,9 @@ type t = {
   c_use_string_reverse: bool [@key "use_string_reverse"];
   (** Use string.reverse(). *)
 
+  c_use_string_gsub: bool [@key "use_string_gsub"];
+  (** Use string.gsub(). *)
+
   c_use_string_len: bool [@key "use_string_len"];
   (** Use string.len(). *)
 
