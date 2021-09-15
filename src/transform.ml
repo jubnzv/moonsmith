@@ -183,6 +183,29 @@ let to_float ctx ty expr =
     end
   | _ -> fallback ()
 
+(** Generates a small lambda function that converts an argument string by some
+    way. *)
+let generate_str_lambda ctx =
+  let open Ast in
+  let open Config in
+  let open Context in
+  let arg = IdentExpr{ id_id = -1;
+                       id_name = "s";
+                       id_ty = TyFunction }
+  in
+  let fallback () = arg in
+  let body_expr = Util.choose [(ctx.ctx_config.c_use_string_lower,
+                                lazy (StdLib.mk_funccall "string.lower" [arg]));
+                               (ctx.ctx_config.c_use_string_upper,
+                                lazy (StdLib.mk_funccall "string.upper" [arg]));
+                               (true,
+                                lazy (fallback ()))]
+    @@ lazy (fallback ())
+  in
+  let lambda_body = ReturnStmt{ return_exprs = [body_expr] } in
+  LambdaExpr{ lambda_args = [arg];
+              lambda_body }
+
 let to_string ctx ty expr =
   let open Ast in
   let open Config in
@@ -209,6 +232,11 @@ let to_string ctx ty expr =
                     lazy (StdLib.mk_funccall "string.gsub" [expr;
                                                             Ast.StringExpr(StringGen.gen_regexp_string ());
                                                             Ast.StringExpr("")]));
+                   (* string.gsub with a function as an argument: https://www.lua.org/pil/20.3.html *)
+                   (ctx.ctx_config.c_use_string_gsub && phys_equal 0 @@ Random.int_incl 0 100,
+                    lazy (StdLib.mk_funccall "string.gsub" [expr;
+                                                            Ast.StringExpr(StringGen.gen_regexp_string ());
+                                                            generate_str_lambda ctx]));
                    (true,
                     lazy (expr))]
       @@ lazy (fallback ())
