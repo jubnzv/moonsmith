@@ -17,9 +17,6 @@ type t = {
   mutable ctx_global_env: Ast.env;
   (** Global environment for the top-level. *)
 
-  ctx_standard_functions: Ast.stmt list;
-  (** Definitions of standard functions. *)
-
   ctx_config : Config.t;
   (** User-defined configuration. *)
 

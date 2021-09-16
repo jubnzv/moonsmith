@@ -17,9 +17,6 @@ type t = {
   mutable ctx_global_env: Ast.env;
   (** Global environment for the top-level. *)
 
-  ctx_standard_functions: Ast.stmt list;
-  (** Definitions of standard functions. *)
-
   ctx_config : Config.t;
   (** User-defined configuration. *)
 
@@ -44,7 +41,6 @@ let mk_context (c : Config.t) =
               ctx_funcdef_stmts = [];
               ctx_call_stmts = [];
               ctx_result_stmts = [];
-              ctx_standard_functions = [];
               ctx_config = c;
               ctx_func_def_map;
               ctx_oop_table_methods_map;
