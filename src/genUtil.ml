@@ -81,10 +81,10 @@ let gen_hash_table_init ?(ty = Ast.TyAny) () =
   let open Ast in
   let gen_hashmap args_num =
     let gen acc =
-      if args_num <= List.length acc then
+      if args_num > List.length acc then
         let idx = Context.get_free_idx () in
         let tf_key = IdentExpr{ id_id = idx;
-                                id_name = Printf.sprintf "tf%d" idx;
+                                id_name = Printf.sprintf "field%d" idx;
                                 id_ty = ty }
         and tf_value = gen_simple_expr ~ty:ty () in
         acc @ [{ tf_key; tf_value }]

@@ -125,6 +125,9 @@ val ty_to_s : ty -> string
 (** Returns type of the given [expr] when it is known. *)
 val get_essential_ty : expr -> ty option
 
+(** Returns a list of identifier ids for fields from a HashMap table. *)
+val get_table_key_ids : expr -> int list
+
 (** Returns true iff given two types can be used in comparison operations. *)
 val types_are_comparable : ty -> ty -> bool
 

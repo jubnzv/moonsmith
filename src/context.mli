@@ -20,9 +20,9 @@ type t = {
   ctx_config : Config.t;
   (** User-defined configuration. *)
 
-  mutable ctx_oop_table_methods_map: (int, int list, Int.comparator_witness) Base.Map.t;
+  mutable ctx_table_fields_map: (int, int list, Int.comparator_witness) Base.Map.t;
   (** Map that associates ids of OOP tables with ids of definitions of their
-      methods. *)
+      fields. *)
 
   mutable ctx_func_def_map: (int, Ast.stmt ref, Int.comparator_witness) Base.Map.t;
   (** Map that associates ids of FuncDefStmts with pointer to their AST nodes. *)

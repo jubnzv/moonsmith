@@ -149,6 +149,24 @@ let get_essential_ty expr =
   | LambdaExpr _         -> Some(TyFunction)
   | _ -> None
 
+let get_table_key_ids table_expr =
+  let get_id = function
+    | IdentExpr id -> id.id_id
+    | _ -> assert false
+  in
+  match table_expr with
+  | TableExpr table -> begin
+      match table with
+      | THashMap hm -> begin
+          List.fold_left
+            hm.table_fields
+            ~init:[]
+            ~f:(fun acc f -> acc @ [get_id f.tf_key])
+        end
+      | TArray _ -> []
+    end
+  | _ -> []
+
 let types_are_comparable ty_lhs ty_rhs =
   match (ty_lhs, ty_rhs) with
   | (TyNil, TyNil)           -> false

@@ -80,12 +80,12 @@ let add_method_to_datum_table ctx method_id idx =
       | IdentExpr id -> begin
           match id.id_ty with
           | TyTable -> begin
-              let method_ids = Map.find_exn ctx.ctx_oop_table_methods_map id.id_id in
+              let method_ids = Map.find_exn ctx.ctx_table_fields_map id.id_id in
               let method_ids = method_ids @ [method_id] in
-              ctx.Context.ctx_oop_table_methods_map <- Map.set
+              ctx.Context.ctx_table_fields_map <- Map.set
                   ~key:idx
                   ~data:(method_ids)
-                  ctx.Context.ctx_oop_table_methods_map;
+                  ctx.Context.ctx_table_fields_map;
             end
           | _ -> assert false
         end

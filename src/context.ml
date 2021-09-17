@@ -20,9 +20,9 @@ type t = {
   ctx_config : Config.t;
   (** User-defined configuration. *)
 
-  mutable ctx_oop_table_methods_map: (int, int list, Int.comparator_witness) Base.Map.t;
+  mutable ctx_table_fields_map: (int, int list, Int.comparator_witness) Base.Map.t;
   (** Map that associates ids of OOP tables with ids of definitions of their
-      methods. *)
+      fields. *)
 
   mutable ctx_func_def_map: (int, Ast.stmt ref, Int.comparator_witness) Base.Map.t;
   (** Map that associates ids of FuncDefStmts with pointer to their AST nodes. *)
@@ -36,14 +36,14 @@ let mk_context (c : Config.t) =
   and ctx_seed =
     match c.c_seed with Some(v) -> v | _ -> Random.bits ()
   and ctx_func_def_map = Map.empty (module Int)
-  and ctx_oop_table_methods_map = Map.empty (module Int) in
+  and ctx_table_fields_map = Map.empty (module Int) in
   let ctx = { ctx_datum_stmts = [];
               ctx_funcdef_stmts = [];
               ctx_call_stmts = [];
               ctx_result_stmts = [];
               ctx_config = c;
               ctx_func_def_map;
-              ctx_oop_table_methods_map;
+              ctx_table_fields_map;
               ctx_global_env;
               ctx_seed; }
   in
