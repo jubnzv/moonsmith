@@ -50,6 +50,9 @@ def run(binary: str, tests_num: Optional[int], timeout: int):
 
     logging.info(f"Starting test")
 
+    if tests_num != None:
+        tests_num = int(tests_num)
+
     while True:
         if i % 100 == 0 and i != 0:
             logging.info(f"Passed {i} tests")
@@ -91,4 +94,4 @@ if __name__ == '__main__':
             help='Number of tests to run.')
     args = parser.parse_args()
     signal.signal(signal.SIGINT, signal_handler)
-    run(args.binary, args.tests_num, args.timeout)
+    run(args.binary, args.tests_num, int(args.timeout))
