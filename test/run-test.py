@@ -6,21 +6,20 @@
 # failed.
 #
 
+import argparse
 import logging
 import os
 import signal
 import subprocess
 import sys
 
+from typing import Optional
+
 
 logging.basicConfig(
     format='[%(asctime)s] %(levelname)-8s %(message)s',
     level=logging.INFO,
     datefmt='%Y-%m-%d %H:%M:%S')
-
-
-g_exe = "_build/default/src/moonsmith.exe"
-g_timeout_s = 1
 
 
 def signal_handler(sig, frame):
@@ -40,7 +39,7 @@ def get_comment_header(out):
     return "\n".join(comment_lines)
 
 
-def run():
+def run(binary: str, tests_num: Optional[int], timeout: int):
     i = 0
     try:
         subprocess.check_output(["mkdir", "-p", "test/out"])
@@ -54,18 +53,20 @@ def run():
     while True:
         if i % 100 == 0 and i != 0:
             logging.info(f"Passed {i} tests")
+        if i == tests_num:
+            break
         i = i + 1
         try:
-            out = subprocess.check_output([g_exe, "-S", "1"],
+            out = subprocess.check_output([binary, "-S", "1"],
                                           stderr=subprocess.STDOUT,
-                                          timeout=g_timeout_s)
+                                          timeout=timeout)
         except subprocess.CalledProcessError as e:
             print(f"{i}: moonsmith's exception: {e}")
             continue
         try:
             out = subprocess.check_output(["lua", "out.lua"],
                                           stderr=subprocess.STDOUT,
-                                          timeout=g_timeout_s)
+                                          timeout=timeout)
         except subprocess.CalledProcessError as e:
             out = e.output.decode("utf-8")
             print(f"{i}: Exception while executing Lua: {out}")
@@ -78,5 +79,16 @@ def run():
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-b', '--binary',
+            default='_build/default/src/moonsmith.exe',
+            help='Path to moonsmith binary')
+    parser.add_argument('-t', '--timeout',
+            default=1,
+            help='Timeout to execute program (sec.)')
+    parser.add_argument('-n', '--tests-num',
+            default=None,
+            help='Number of tests to run.')
+    args = parser.parse_args()
     signal.signal(signal.SIGINT, signal_handler)
-    run()
+    run(args.binary, args.tests_num, args.timeout)

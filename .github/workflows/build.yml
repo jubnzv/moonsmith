@@ -1,4 +1,4 @@
-name: Build
+name: Build & Test
 
 on:
   push:
@@ -27,3 +27,10 @@ jobs:
         dune build @install
         mkdir -p output
         dune install --prefix output
+    - name: Prepare to test
+      run: |
+        sudo apt-get install -y lua5.3
+        sudo ln -sf /usr/bin/lua{5.3,}
+        mkdir -p test/out
+    - name: Test
+      run: ./test/run-test.py -b output/bin/moonsmith -n 2500 -t 2
