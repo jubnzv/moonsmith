@@ -7,7 +7,7 @@ let gen_numeric_assign_rhs expr =
 
 let get_id_name = function
   | Ast.IdentExpr id -> Printf.sprintf "res_%s" id.id_name
-  | _ -> assert false
+  | _ -> failwith "Expected IdentExpr"
 
 (* TODO: It doesn't handle multiple arguments returned from the functions. But
          we don't do this for now. *)
@@ -43,9 +43,9 @@ let gen_rhs ctx stmt =
                          |> gen_numeric_assign_rhs
           | TyUserdata | TyThread | TyAny | TyFunction -> IntExpr(1)
         end
-      | _ -> assert false
+      | _ -> failwith "Impossible: Found non-IdentExpr in LHS of the assignment"
     end
-  | _ -> assert false
+  | _ -> failwith "Expected AssignStmt"
 
 (** Generates statements that assign new temporary variable to result of a
     function call. *)
@@ -76,7 +76,7 @@ let datum_to_num ctx acc datum_stmt =
   let open Ast in
   let id_name = match datum_stmt with
     | AssignStmt assign -> get_id_name (List.nth_exn assign.assign_lhs 0)
-    | _ -> assert false
+    | _ -> failwith "Expected AssignStmt"
   in
   let lhs = IdentExpr{ id_id = Context.get_free_idx ();
                        id_name;
@@ -102,7 +102,7 @@ let gen_combine_stmt num_stmts =
     | None -> begin
         match stmt with
         | AssignStmt assign -> Some(List.nth_exn assign.assign_lhs 0)
-        | _ -> assert false
+        | _ -> failwith "Expected AssignStmt"
       end
     | Some acc -> begin
         match stmt with
@@ -114,7 +114,7 @@ let gen_combine_stmt num_stmts =
             in
             Some(bin)
           end
-        | _ -> assert false
+        | _ -> failwith "Expected AssignStmt"
       end
   in
   let combined_expr = List.fold_left
@@ -138,9 +138,9 @@ let gen_print_stmt ctx combine_stmt =
     | AssignStmt assign -> begin
         match List.nth_exn assign.assign_lhs 0 with
         | IdentExpr id -> IdentExpr(id)
-        | _ -> assert false
+        | _ -> failwith "Impossible: Found non-IdentExpr in LHS of the assignment"
       end
-    | _ -> assert false
+    | _ -> failwith "Expected AssignStmt"
   in
   FuncCallStmt{ fc_expr = StdLib.mk_funccall "print" [ Transform.to_int ctx TyFloat result_id ] }
 

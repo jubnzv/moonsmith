@@ -87,11 +87,11 @@ let add_method_to_datum_table ctx method_id idx =
                   ~data:(method_ids)
                   ctx.Context.ctx_table_fields_map;
             end
-          | _ -> assert false
+          | _ -> failwith "A given symbol is not a table"
         end
-      | _ -> assert false
+      | _ -> failwith "Assign statement contains not IdentExpr in lhs"
     end
-  | _ -> assert false
+  | _ -> failwith "Expected AssignStmt"
 
 (** Generates a random statement that defines some local variables in the
     given [env] *)
@@ -161,7 +161,7 @@ let gen_body ctx block =
       in
       BlockStmt{ block with block_stmts = local_def_stmts @ mutation_stmts }
     end
-  | _ -> assert false
+  | _ -> failwith "Impossible: Body of a ForStmt is not a BlockStmt"
 
 (** Fills body of the given function. *)
 let fill_funcdef ctx fd =
@@ -178,7 +178,7 @@ let fill_funcdef ctx fd =
       in
       FuncDefStmt{ fd with fd_body = fd_body}
     end
-  | _ -> assert false
+  | _ -> failwith "Impossible: Body of a ForStmt is not a BlockStmt"
 
 (** Generates a random function defined on the top-level.
     Generated function contains an empty body. *)

@@ -41,7 +41,7 @@ let gen_fcall_from_fdef stmt =
                     let init = GenUtil.gen_init_stmt_for_ident ~assign_local:true new_ident in
                     acc @ [(new_ident, init)]
                   end
-                | _ -> assert false
+                | _ -> failwith "gen_varags works incorrectly"
               end)
         |> Caml.List.split
       in
@@ -76,7 +76,7 @@ let gen_fcall_from_fdef stmt =
                                                                 fc_ty;
                                                                 fc_args }]}]
     end
-  | _ -> assert false
+  | _ -> failwith "Expected FuncDefStmt"
 
 let generate (ctx : Context.t) =
   let open Context in

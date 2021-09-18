@@ -47,9 +47,9 @@ let gen_datum_value ctx lhs =
               ctx.Context.ctx_table_fields_map;
           table_expr
         end
-      | TyFunction | TyThread | TyUserdata | TyNil | TyAny -> assert false
+      | TyFunction | TyThread | TyUserdata | TyNil | TyAny -> failwith "Unsupported type for gen_datum_value"
     end
-  | _ -> assert false
+  | _ -> failwith "Expected IdentExpr"
 
 (** Generates a random datum block in the given [ctx]. *)
 let gen_random_datum ctx =

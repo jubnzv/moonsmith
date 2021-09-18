@@ -79,7 +79,7 @@ let gen_for_names for_body =
       | 2 -> [gen_wildcard (); gen_wildcard ()]
       | _ -> [(gen_var "i" TyInt env); (gen_var "v" TyAny env)]
     end
-  | _ -> assert false
+  | _ -> failwith "Impossible: Body of a ForStmt is not a BlockStmt"
 
 let gen_generic_for ctx env =
   let open Ast in

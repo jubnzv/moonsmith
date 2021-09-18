@@ -72,7 +72,7 @@ let peek_random_datum_exn ctx =
   let open Ast in
   match Util.choose_one_exn ctx.ctx_datum_stmts with
   | AssignStmt assign -> List.nth_exn assign.assign_lhs 0
-  | _ -> assert false
+  | _ -> failwith "Expected AssignStmt"
 
 let peek_typed_datum ctx ty =
   let open Ast in
@@ -84,9 +84,9 @@ let peek_typed_datum ctx ty =
             if equal_ty id.id_ty ty then true
             else false
           end
-        | _ -> assert false
+        | _ -> failwith "Impossible: Found non-IdentExpr in LHS of the AssignStmt"
       end
-    | _ -> assert false
+    | _ -> failwith "Expected AssignStmt"
   in
   let datums_with_same_ty =
     List.filter ctx.ctx_datum_stmts ~f:filter
@@ -95,7 +95,7 @@ let peek_typed_datum ctx ty =
   else begin
     match Util.choose_one_exn datums_with_same_ty with
     | AssignStmt assign -> List.nth assign.assign_lhs 0
-    | _ -> assert false
+    | _ -> failwith "Expected AssignStmt"
   end
 
 let get_datum_tables_i ctx =

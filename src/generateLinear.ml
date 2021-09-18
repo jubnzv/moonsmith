@@ -32,7 +32,7 @@ let generate ctx env =
   let lhs = peek_lhs () in
   let ty = match lhs with
     | IdentExpr id -> id.id_ty
-    | _ -> assert false
+    | _ -> failwith "Impossible: Not IdentExpr was generated"
   in
   let rhs_opt = peek_rhs_parts () |> GenUtil.combine_to_typed_expr ctx ty in
   match rhs_opt with

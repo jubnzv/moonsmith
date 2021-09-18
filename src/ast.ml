@@ -152,7 +152,7 @@ let get_essential_ty expr =
 let get_table_key_ids table_expr =
   let get_id = function
     | IdentExpr id -> id.id_id
-    | _ -> assert false
+    | _ -> failwith "Impossible: Table key is not IdentExpr"
   in
   match table_expr with
   | TableExpr table -> begin
@@ -310,7 +310,7 @@ let env_add_child env_parent block_env =
 
 let get_ident_name = function
   | IdentExpr id -> id.id_name
-  | _ -> assert false
+  | _ -> failwith "Expected IdentExpr"
 
 (** Generates indentation string of depth [n]. *)
 let rec mk_indent is n =
@@ -452,7 +452,7 @@ let rec stmt_to_s ?(cr = false) ?(depth = 0) c stmt =
                 | IdentExpr id ->
                   acc @ [Printf.sprintf "%s-- @param %s %s"
                            (mk_i ()) id.id_name (ty_to_s id.id_ty)]
-                | _ -> assert false
+                | _ -> failwith "Expected IdentExpr"
               end)
         |> String.concat ~sep:"\n"
       and args_code = exprs_to_cs stmt_to_s c fd.fd_args
@@ -501,7 +501,7 @@ let rec stmt_to_s ?(cr = false) ?(depth = 0) c stmt =
                 (name, exprs_to_cs stmt_to_s c fce.fc_args)
               end
           end
-        | _ -> assert false
+        | _ -> failwith "Expected FuncCallExpr"
       in
       Printf.sprintf "%s%s(%s)" (mk_i ()) name args_s
     end

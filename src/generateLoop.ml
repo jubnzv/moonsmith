@@ -42,7 +42,7 @@ let gen_loop_cond cond_var_ident cond_term =
         | CondLowering ->
           let v = IntExpr(Random.int_incl 50 75) in
           if Random.bool () then (v, OpGt) else (v, OpGte)
-        | _ -> assert false
+        | _ -> failwith "Generated incorrect condition for the loop"
       in
       BinExpr{ bin_lhs = cond_var_ident;
                bin_op;
@@ -56,13 +56,13 @@ let gen_loop_cond cond_var_ident cond_term =
         | CondFalse ->
           if Random.bool () then (FalseExpr, OpEq)
           else (TrueExpr, OpNeq)
-        | _ -> assert false
+        | _ -> failwith "Generated incorrect condition for the loop"
       in
       BinExpr{ bin_lhs = cond_var_ident;
                bin_op;
                bin_rhs }
     end
-  | _ -> assert false
+  | _ -> failwith "Generated incorrect condition for the loop"
 
 let gen_term_stmt cond_var_ident cond_term =
   let open Ast in
@@ -87,7 +87,7 @@ let gen_loop_block ctx env cond_var_ident cond_term =
     let body = (Random.int_incl 1 3) |> GenerateLinear.generate_stmts ctx env in
     let body = block.block_stmts @ body @ [term_stmt] in
     Ast.BlockStmt{ block with block_stmts = body }
-  | _ -> assert false
+  | _ -> failwith "Expected BlockStmt"
 
 let generate ctx env =
   let ast_loop_ty = if Random.bool () then Ast.Repeat else Ast.While in

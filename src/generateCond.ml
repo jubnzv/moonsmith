@@ -28,7 +28,7 @@ let generate ctx env =
       let body =
         (Random.int_incl 1 3) |> GenerateLinear.generate_stmts ctx env
       in BlockStmt{ block with block_stmts = body }
-    | _ -> assert false
+    | _ -> failwith "Impossible: Body of the function is not a BlockStmt"
   in
   let gen_else () =
     if Random.bool () then None

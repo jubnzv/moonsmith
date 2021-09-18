@@ -48,7 +48,7 @@ val gen_dummy_block : unit -> Ast.stmt
 (** Generates an appropriate rhs for assign the given expression. There
     can be global datums [ctx.ctx_datum_stmts] and local definitions from
     the given environment in the rhs.
-    The expression must be [IdentExpr] with known type. *)
+    The expression must be [IdentExpr] with a known type. *)
 val gen_rhs_to_assign_ident : Context.t -> Ast.env -> Ast.expr -> Ast.expr
 
 (** Generates an initializer statement for the identifier with known type.

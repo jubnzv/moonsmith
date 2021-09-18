@@ -164,7 +164,7 @@ let gen_rhs_to_assign_ident ctx env expr  =
           |> Option.value ~default:(gen_simple_expr ~ty:(id.id_ty) ())
         end
     end
-  | _ -> assert false
+  | _ -> failwith "Impossible: Trying to generate RHS for not IdentExpr"
 
 let gen_init_stmt_for_ident ?(assign_local = false) expr =
   let open Ast in
@@ -197,9 +197,10 @@ let gen_init_stmt_for_ident ?(assign_local = false) expr =
         end
       | TyTable -> gen_array_table_init () |> gen_init_stmt
       | TyAny   -> gen_init_stmt NilExpr
-      | TyUserdata | TyThread -> assert false
+      | TyUserdata | TyThread -> failwith "Userdata and Thread types are unsupported"
+
     end
-  | _ -> assert false
+  | _ -> failwith "Impossible: Got not IdentExpr as LHS of the assign statement"
 
 let take_random_binding env =
   let open Ast in
