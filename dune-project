@@ -4,7 +4,7 @@
 (generate_opam_files true)
 
 (name moonsmith)
-(version 0.1.0)
+(version 0.2.0)
 (authors "Georgiy Komarov")
 (license LGPL-3.0-or-later)
 (source (github jubnzv/moonsmith))

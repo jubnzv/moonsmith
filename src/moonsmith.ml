@@ -35,7 +35,7 @@ let () =
       ~description:
         "Path to configuration file. If not set, the default options will be used."
       ~placeholder:"CONFIGPATH"
-      "moonsmith.json"
+      "moonsmith.yml"
   and libpath =
     Clap.default_string
       ~short:'I'
@@ -70,14 +70,13 @@ let () =
 
   let c =
     if Sys.file_exists configpath then
-      Yojson.Safe.from_file configpath
-      |> Config.of_yojson
-      |> Caml.Result.value ~default:(Config.mk_default ())
+      Config.from_yaml configpath
+      |> Option.value ~default:(Config.mk_default ())
     else
       Config.mk_default ()
   in
   let c = set_seed c seed in
-  let c = { c with c_stdout = phys_equal stdout 1 } in
+  let c = { c with c_stdout = phys_equal stdout 1 || c.Config.c_stdout } in
   let c =
     if not @@ phys_equal nolib 1 then { c with c_lib_path = sanitize_libpath libpath }
     else { c with c_lib_path = None }
