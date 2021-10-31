@@ -1,0 +1,91 @@
+general:
+    "indent": "  "
+
+    # Path to external Lua module used in runtime.
+    "lib_path": "lua/lib.lua"
+
+    # Minimum number of datums defined on the top-level.
+    "min_toplevel_datums": 5
+
+    # Maximum number of datums defined on the top-level.
+    "max_toplevel_datums": 10
+
+    # Minimum number of functions and methods defined on the top-level.
+    "min_toplevel_funcdefs": 4
+
+    # Maximum number of functions and methods defined on the top-level.
+    "max_toplevel_funcdefs": 8
+
+    # Prints generated program to stdout.
+    "stdout": false
+
+    # Seed used to initialize random generator. If null, the seed will be
+    # choosen randomly.
+    "seed": null
+
+language:
+    # If true, generate some random OOP methods for the datum tables.
+    "gen_oop_methods": true
+
+    # Use hexademical floats introduced in Lua 5.3.
+    "use_hex_floats": true
+
+    # Use length ('#') operator on strings and tables.
+    "use_length": true
+
+    # Use 'pairs' function
+    "use_pairs": true
+
+    # Use 'ipairs' function
+    "use_ipairs": true
+
+    # Use tostring()
+    "use_tostring": true
+
+    # Use tonumber()
+    "use_tonumber": true
+
+    # Use string.upper()
+    "use_string_upper": true
+
+    # Use string.lower()
+    "use_string_lower": true
+
+    # Use string.sub()
+    "use_string_sub": true
+
+    # Use string.reverse()
+    "use_string_reverse": true
+
+    # Use string.gsub()
+    "use_string_gsub": true
+
+    # Use string.len()
+    "use_string_len": true
+
+    # Use math.type()
+    "use_math_type": true
+
+    # Use math.ult()
+    "use_math_ult": true
+
+    # Use math.sin()
+    "use_math_sin": true
+
+    # Use math.cos()
+    "use_math_cos": true
+
+    # Use math.tan()
+    "use_math_tan": true
+
+    # Use math.abs()
+    "use_math_abs": true
+
+    # Use math.pi
+    "use_math_pi": true
+
+    # Use math.log()
+    "use_math_log": true
+
+    # Use math.floor()
+    "use_math_floor": true
