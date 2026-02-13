@@ -7,7 +7,7 @@ let sanitize_libpath libpath =
   else
     let argv = Sys.get_argv () in
     let opam_path = Printf.sprintf "%s/../share/moonsmith/%s"
-        (Filename.dirname @@ FileUtil.which argv.(0))
+        (Core.Filename.dirname @@ FileUtil.which argv.(0))
         libpath in
     if Stdlib.Sys.file_exists opam_path then Some(opam_path)
     else None
