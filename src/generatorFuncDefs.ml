@@ -1,4 +1,4 @@
-open Core_kernel
+open Core
 
 (** Generate expressions used in ReturnStmt of the function. *)
 let gen_return_exprs ctx env return_types =

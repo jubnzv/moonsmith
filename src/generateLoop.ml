@@ -1,4 +1,4 @@
-open Core_kernel
+open Core
 
 (** Termination condition. *)
 type cond_term =

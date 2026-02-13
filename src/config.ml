@@ -1,4 +1,4 @@
-open Core_kernel
+open Core
 
 (** User-defined options for generating random programs. *)
 type t = {

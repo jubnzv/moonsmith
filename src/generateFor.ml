@@ -1,4 +1,4 @@
-open Core_kernel
+open Core
 
 let gen_loop_block env =
   GenUtil.gen_empty_block env

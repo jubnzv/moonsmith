@@ -1,4 +1,4 @@
-open Core_kernel
+open Core
 
 (** Creates default path to Lua library using information about distribution
     installation paths. *)

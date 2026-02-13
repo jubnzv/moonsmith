@@ -1,4 +1,4 @@
-open Core_kernel
+open Core
 
 (** Random code generation context. *)
 type t = {

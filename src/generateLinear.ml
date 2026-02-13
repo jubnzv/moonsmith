@@ -1,4 +1,4 @@
-open Core_kernel
+open Core
 
 let generate ctx env =
   (* Peek lhs for mutation. Prefer local variables to global datums. *)

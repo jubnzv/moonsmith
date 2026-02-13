@@ -1,4 +1,4 @@
-open Core_kernel
+open Core
 
 let wordlist =
   [ "Lorem"; "ipsum"; "dolor"; "sit"; "amet"; "consectetur";

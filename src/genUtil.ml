@@ -1,4 +1,4 @@
-open Core_kernel
+open Core
 
 let gen_ty () =
   let open Ast in

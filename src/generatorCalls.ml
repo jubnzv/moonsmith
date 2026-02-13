@@ -1,4 +1,4 @@
-open Core_kernel
+open Core
 
 (** Generates a call statement for a free function with definition of its
     parameters, using information about types of the arguments. *)

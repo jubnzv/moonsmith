@@ -1,4 +1,4 @@
-open Core_kernel
+open Core
 
 (** Essential types present in Lua. *)
 type ty =

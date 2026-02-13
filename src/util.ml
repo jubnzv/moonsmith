@@ -1,4 +1,4 @@
-open Core_kernel
+open Core
 
 let choose_one_exn l =
   List.nth_exn l @@ Random.int @@ List.length l
