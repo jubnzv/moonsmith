@@ -133,7 +133,7 @@ let get_yaml_value_exn (v : Yaml.yaml) =
   | _ -> failwith "Configuration file is broken."
 
 let set_config_value acc fn =
-  Caml.Option.fold
+  Stdlib.Option.fold
     ~none:None
     ~some:fn
     acc
@@ -307,7 +307,7 @@ let set_language_settings acc (mapping : Yaml.mapping) =
 let from_yaml filepath =
   let yaml = In_channel.read_all filepath
              |> Yaml.yaml_of_string
-             |> Caml.Result.get_ok
+             |> Stdlib.Result.get_ok
   in
   match yaml with
   | `O mapping -> begin

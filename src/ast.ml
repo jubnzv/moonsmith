@@ -240,7 +240,7 @@ let env_shuffle_local_bindings env =
     let get_shuffled_idxes () =
       let nums = List.range 0 bindings_len in
       let ns = List.map nums ~f:(fun num -> (Random.bits (), num)) in
-      let sorted = Caml.List.sort Caml.compare ns in
+      let sorted = Stdlib.List.sort Stdlib.compare ns in
       List.map sorted ~f:snd
     in
     let rec aux acc n idxes =

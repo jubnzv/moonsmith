@@ -108,7 +108,7 @@ let gen_local_def_stmt ctx env =
       aux (acc @ [(lhs, rhs)])
     end
   in
-  let (assign_lhs, assign_rhs) = aux [] |> Caml.List.split in
+  let (assign_lhs, assign_rhs) = aux [] |> Stdlib.List.split in
   Ast.env_flush_pending_bindings env;
   Ast.AssignStmt{ assign_local = Random.bool ();
                   assign_lhs;

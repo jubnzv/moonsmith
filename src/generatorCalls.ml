@@ -43,7 +43,7 @@ let gen_fcall_from_fdef stmt =
                   end
                 | _ -> failwith "gen_varags works incorrectly"
               end)
-        |> Caml.List.split
+        |> Stdlib.List.split
       in
       (* Set type of the function call. *)
       let fc_ty = match fd.fd_receiver with
