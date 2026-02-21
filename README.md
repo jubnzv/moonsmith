@@ -1,7 +1,5 @@
 # moonsmith
 
-![](https://github.com/jubnzv/moonsmith/workflows/Build/badge.svg)
-
 moonsmith is a generator of random Lua 5.3 programs.
 
 This tool can be used to evaluate tooling that works with Lua: parsers, transpilers, code analyzers, etc.
