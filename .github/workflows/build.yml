@@ -9,17 +9,17 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        ocaml-version: [ '4.11.0' ]
+        ocaml-version: [ '4.14.0' ]
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Setup OCaml ${{ matrix.ocaml-version }}
-      uses: avsm/setup-ocaml@master
+      uses: ocaml/setup-ocaml@v3
       with:
-        ocaml-version: ${{ matrix.ocaml-version }}
+        ocaml-compiler: ${{ matrix.ocaml-version }}
     - name: Build
       run: |
         opam install -y dune core_kernel clap ppx_deriving ppx_deriving_yojson ppxlib yojson fileutils yaml
