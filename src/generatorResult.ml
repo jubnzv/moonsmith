@@ -1,4 +1,4 @@
-open Core_kernel
+open Core
 
 (** Gets [expr] that always evaluated to an integer value and
     extends it with some random computations. *)

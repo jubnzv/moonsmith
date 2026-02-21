@@ -1,14 +1,15 @@
-open Core_kernel
+open Core
 
 (** Creates default path to Lua library using information about distribution
     installation paths. *)
 let sanitize_libpath libpath =
-  if Sys.file_exists libpath then Some(libpath)
+  if Stdlib.Sys.file_exists libpath then Some(libpath)
   else
+    let argv = Sys.get_argv () in
     let opam_path = Printf.sprintf "%s/../share/moonsmith/%s"
-        (Filename.dirname @@ FileUtil.which Sys.argv.(0))
+        (Core.Filename.dirname @@ FileUtil.which argv.(0))
         libpath in
-    if Sys.file_exists opam_path then Some(opam_path)
+    if Stdlib.Sys.file_exists opam_path then Some(opam_path)
     else None
 
 let set_seed c s =
@@ -69,7 +70,7 @@ let () =
   Clap.close ();
 
   let c =
-    if Sys.file_exists configpath then
+    if Stdlib.Sys.file_exists configpath then
       Config.from_yaml configpath
       |> Option.value ~default:(Config.mk_default ())
     else

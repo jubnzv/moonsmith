@@ -1,4 +1,4 @@
-open Core_kernel
+open Core
 
 (** Generates a datum table that may be an object in OOP sense. It may
     have methods and could be inherited. The methods can be randomly generated

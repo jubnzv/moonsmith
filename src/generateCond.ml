@@ -1,4 +1,4 @@
-open Core_kernel
+open Core
 
 let generate ctx env =
   let open Ast in

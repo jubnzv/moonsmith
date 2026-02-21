@@ -1,4 +1,4 @@
-open Core_kernel
+open Core
 
 (** Generates expression that converts the given [IdentExpr] from
     float to integer. *)
