@@ -29,8 +29,11 @@ jobs:
         dune install --prefix output
     - name: Prepare to test
       run: |
-        sudo apt-get install -y lua5.3
-        sudo ln -sf /usr/bin/lua{5.3,}
+        sudo apt-get install -y lua5.3 lua5.1
         mkdir -p test/out
-    - name: Test
-      run: ./test/run-test.py -b output/bin/moonsmith -n 2500 -t 2
+    - name: Test (Lua 5.3)
+      run: ./test/run-test.py -b output/bin/moonsmith -l lua5.3 -n 2500 -t 2
+    - name: Test (Lua 5.1)
+      run: |
+        cp moonsmith-lua51.yml moonsmith.yml
+        ./test/run-test.py -b output/bin/moonsmith -l lua5.1 -n 2500 -t 2
