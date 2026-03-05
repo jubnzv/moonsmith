@@ -12,7 +12,8 @@ let float_to_int ctx expr =
   if ctx.Context.ctx_config.Config.c_use_math_floor then begin
     StdLib.mk_funccall "math.floor" [expr]
   end
-  else if can_convert_with_floor () then begin
+  else if can_convert_with_floor () &&
+          ctx.Context.ctx_config.Config.c_use_floor_div then begin
     (* Floor with '// 1' and convert to string using 'tostring()'.
        Then remove .0 from the string and convert to integer. *)
     let floored = BinExpr{ bin_lhs = expr;

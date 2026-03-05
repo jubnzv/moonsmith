@@ -39,7 +39,7 @@ def get_comment_header(out):
     return "\n".join(comment_lines)
 
 
-def run(binary: str, tests_num: Optional[int], timeout: int):
+def run(binary: str, lua: str, tests_num: Optional[int], timeout: int):
     i = 0
     try:
         subprocess.check_output(["mkdir", "-p", "test/out"])
@@ -67,7 +67,7 @@ def run(binary: str, tests_num: Optional[int], timeout: int):
             print(f"{i}: moonsmith's exception: {e}")
             continue
         try:
-            out = subprocess.check_output(["lua", "out.lua"],
+            out = subprocess.check_output([lua, "out.lua"],
                                           stderr=subprocess.STDOUT,
                                           timeout=timeout)
         except subprocess.CalledProcessError as e:
@@ -89,9 +89,12 @@ if __name__ == '__main__':
     parser.add_argument('-t', '--timeout',
             default=1,
             help='Timeout to execute program (sec.)')
+    parser.add_argument('-l', '--lua',
+            default='lua',
+            help='Path to Lua interpreter')
     parser.add_argument('-n', '--tests-num',
             default=None,
             help='Number of tests to run.')
     args = parser.parse_args()
     signal.signal(signal.SIGINT, signal_handler)
-    run(args.binary, args.tests_num, int(args.timeout))
+    run(args.binary, args.lua, args.tests_num, int(args.timeout))

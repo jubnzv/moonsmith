@@ -32,6 +32,12 @@ type t = {
   c_use_hex_floats: bool;
   (** Use hexademical floats introduced in Lua 5.3. *)
 
+  c_use_bitwise_ops: bool;
+  (** Use bitwise operators introduced in Lua 5.3. *)
+
+  c_use_floor_div: bool;
+  (** Use floor division operator (//) introduced in Lua 5.3. *)
+
   (* *** Language features *** *)
 
   c_use_length: bool;
@@ -106,6 +112,8 @@ let mk_default () =
     c_seed = None;
     c_gen_oop_methods = true;
     c_use_hex_floats = true;
+    c_use_bitwise_ops = true;
+    c_use_floor_div = true;
     c_use_length = true;
     c_use_pairs = true;
     c_use_ipairs = true;
@@ -207,6 +215,14 @@ let set_language_settings acc (mapping : Yaml.mapping) =
             | "use_hex_floats" ->
               set_config_value acc
                 (fun c -> Some({ c with c_use_hex_floats =
+                                          bool_of_string @@ get_yaml_value_exn v }))
+            | "use_bitwise_ops" ->
+              set_config_value acc
+                (fun c -> Some({ c with c_use_bitwise_ops =
+                                          bool_of_string @@ get_yaml_value_exn v }))
+            | "use_floor_div" ->
+              set_config_value acc
+                (fun c -> Some({ c with c_use_floor_div =
                                           bool_of_string @@ get_yaml_value_exn v }))
             | "use_length" ->
               set_config_value acc

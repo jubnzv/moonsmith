@@ -11,7 +11,7 @@ function ms.table_to_int(t)
     if type(v) == "number" then
       acc = acc + v
     else
-      acc = acc & i
+      acc = acc + i
     end
   end
   return acc + #t
