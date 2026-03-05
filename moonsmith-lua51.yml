@@ -23,25 +23,14 @@ general:
     # choosen randomly.
     "seed": null
 
-    # For Lua 5.1 compatibility, set:
-    #   use_bitwise_ops: false
-    #   use_floor_div: false
-    #   use_hex_floats: false
-    #   use_math_type: false
-    #   use_math_ult: false
-
 language:
     # If true, generate some random OOP methods for the datum tables.
     "gen_oop_methods": true
 
-    # Use hexademical floats introduced in Lua 5.3.
-    "use_hex_floats": true
-
-    # Use bitwise operators introduced in Lua 5.3.
-    "use_bitwise_ops": true
-
-    # Use floor division operator (//) introduced in Lua 5.3.
-    "use_floor_div": true
+    # Lua 5.3 features disabled for Lua 5.1 compatibility.
+    "use_hex_floats": false
+    "use_bitwise_ops": false
+    "use_floor_div": false
 
     # Use length ('#') operator on strings and tables.
     "use_length": true
@@ -76,11 +65,9 @@ language:
     # Use string.len()
     "use_string_len": true
 
-    # Use math.type()
-    "use_math_type": true
-
-    # Use math.ult()
-    "use_math_ult": true
+    # Lua 5.3 math functions disabled for Lua 5.1 compatibility.
+    "use_math_type": false
+    "use_math_ult": false
 
     # Use math.sin()
     "use_math_sin": true

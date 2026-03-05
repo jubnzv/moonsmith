@@ -249,15 +249,20 @@ let take_random_binding env =
 
 (** Generates unary operator which can take expression of type [ty] and returns
     an expression of the same [ty]. *)
-let gen_combine_unop ty =
+let gen_combine_unop ctx ty =
   let open Ast in
+  let open Context in
+  let open Config in
   match ty with
   | TyNil      -> None
   | TyBoolean  -> Some(OpNot)
   | TyInt      -> begin
-      match Random.bool () with
-      | true -> Some(OpSub)  (* - *)
-      | _ ->    Some(OpBNot) (* ~ *)
+      if ctx.ctx_config.c_use_bitwise_ops then
+        match Random.bool () with
+        | true -> Some(OpSub)  (* - *)
+        | _ ->    Some(OpBNot) (* ~ *)
+      else
+        Some(OpSub)
     end
   | TyFloat     -> Some(OpSub)
   | TyString    -> None
@@ -306,8 +311,11 @@ let gen_combine_un_funcall ctx ty =
     returns an expression of the same [ty]. The type of the generated operator
     depends of values of [lhs] and [rhs], because we must avoid result
     expresssions which exceeds Lua's number limits. *)
-let gen_combine_binop ty lhs rhs =
+let gen_combine_binop ctx ty lhs rhs =
   let open Ast in
+  let open Context in
+  let open Config in
+  let use_bitwise = ctx.ctx_config.c_use_bitwise_ops in
   match ty with
   | TyNil      -> None
   | TyBoolean  -> begin
@@ -318,11 +326,16 @@ let gen_combine_binop ty lhs rhs =
   | TyInt      -> begin
       (* Chooses "safe" operand that won't cause number overflow. *)
       let select_safe () =
-        match Random.int_incl 0 4 with
-        | 0 -> Some(OpAdd)  (* + *)
-        | 1 -> Some(OpSub)  (* - *)
-        | 3 -> Some(OpBAnd) (* & *)
-        | _ -> Some(OpBOr)  (* ~ *)
+        if use_bitwise then
+          match Random.int_incl 0 4 with
+          | 0 -> Some(OpAdd)  (* + *)
+          | 1 -> Some(OpSub)  (* - *)
+          | 3 -> Some(OpBAnd) (* & *)
+          | _ -> Some(OpBOr)  (* ~ *)
+        else
+          match Random.bool () with
+          | true -> Some(OpAdd)  (* + *)
+          | _    -> Some(OpSub)  (* - *)
       in
       match lhs, rhs with
       | IntExpr(l), IntExpr(r) -> begin
@@ -335,11 +348,17 @@ let gen_combine_binop ty lhs rhs =
               Some(OpMod) (* % *)
           else if (l < 10) && (r < 3) then
             (* We could safely perform some operations on small integers. *)
-            match Random.int_incl 0 4 with
-            | 0 -> Some(OpPow)  (* ^ *)
-            | 1 -> Some(OpBRs)  (* >> *)
-            | 2 -> Some(OpMul)  (* * *)
-            | _ -> Some(OpBLs)  (* << *)
+            if use_bitwise then
+              match Random.int_incl 0 4 with
+              | 0 -> Some(OpPow)  (* ^ *)
+              | 1 -> Some(OpBRs)  (* >> *)
+              | 2 -> Some(OpMul)  (* * *)
+              | _ -> Some(OpBLs)  (* << *)
+            else
+              match Random.int_incl 0 2 with
+              | 0 -> Some(OpPow)  (* ^ *)
+              | 1 -> Some(OpMul)  (* * *)
+              | _ -> Some(OpAdd)  (* + *)
           else
             select_safe ()
         end
@@ -382,7 +401,7 @@ let rec combine ctx ty exprs =
       None
     end
   | [expr] -> begin
-      match gen_combine_unop ty with
+      match gen_combine_unop ctx ty with
       | Some un_op -> begin
           (* Create an unary expression. *)
           Some(UnExpr{ un_op;
@@ -410,7 +429,7 @@ let rec combine ctx ty exprs =
       let rhs_opt = combine ctx ty head in
       match rhs_opt with
       | Some rhs -> begin
-          match gen_combine_binop ty lhs rhs with
+          match gen_combine_binop ctx ty lhs rhs with
           | Some bin_op -> begin
               (* Create a binary operator. *)
               Some(BinExpr{ bin_lhs = lhs;

@@ -30,6 +30,12 @@ type t = {
   c_use_hex_floats: bool;
   (** Use hexademical floats introduced in Lua 5.3. *)
 
+  c_use_bitwise_ops: bool;
+  (** Use bitwise operators introduced in Lua 5.3. *)
+
+  c_use_floor_div: bool;
+  (** Use floor division operator (//) introduced in Lua 5.3. *)
+
   (* *** Language features *** *)
 
   c_use_length: bool;
